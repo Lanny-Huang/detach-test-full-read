@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TY25 Detach / Unassign Full Test Read</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    h2 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #333; }
+    .subtitle { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.6; }
+    .section { margin-bottom: 28px; }
+    .card {
+      background: white; border-radius: 12px; padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .kpi-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .kpi {
+      background: white; border-radius: 12px; padding: 16px 20px;
+      flex: 1; min-width: 150px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-left: 4px solid #4f46e5;
+    }
+    .kpi.green  { border-left-color: #10b981; }
+    .kpi.amber  { border-left-color: #f59e0b; }
+    .kpi.red    { border-left-color: #ef4444; }
+    .kpi.blue   { border-left-color: #3b82f6; }
+    .kpi-label  { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .kpi-value  { font-size: 28px; font-weight: 700; }
+    .kpi-sub    { font-size: 11px; color: #aaa; margin-top: 2px; }
+    .chart-row  { display: flex; gap: 16px; flex-wrap: wrap; }
+    .chart-box  {
+      background: white; border-radius: 12px; padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      flex: 1; min-width: 400px;
+    }
+    .chart-box canvas { width: 100% !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f8f9fa; padding: 10px 14px; text-align: left; font-weight: 600; border-bottom: 2px solid #e5e7eb; }
+    td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; }
+    tr:hover td { background: #f8f9fb; }
+    .highlight { background: #fef9c3; font-weight: 600; }
+    .timeline {
+      display: flex; align-items: center; gap: 0; margin: 16px 0 24px; padding: 0 10px;
+      position: relative;
+    }
+    .tl-line {
+      flex: 1; height: 3px; background: #d1d5db;
+    }
+    .tl-node {
+      display: flex; flex-direction: column; align-items: center; z-index: 1;
+    }
+    .tl-dot {
+      width: 16px; height: 16px; border-radius: 50%; border: 3px solid white;
+      box-shadow: 0 0 0 2px #4f46e5;
+      background: #4f46e5;
+    }
+    .tl-dot.green { background: #10b981; box-shadow: 0 0 0 2px #10b981; }
+    .tl-dot.amber { background: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; }
+    .tl-dot.red   { background: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
+    .tl-label { font-size: 11px; color: #666; margin-top: 8px; text-align: center; max-width: 100px; }
+    .tl-date  { font-size: 10px; font-weight: 700; color: #333; margin-bottom: 6px; }
+    .callout {
+      background: #eff6ff; border-left: 4px solid #3b82f6; padding: 14px 18px;
+      border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 13px; line-height: 1.6;
+    }
+    .callout.warning { background: #fefce8; border-left-color: #f59e0b; }
+    .tag {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 11px; font-weight: 600;
+    }
+    .tag-green { background: #d1fae5; color: #065f46; }
+    .tag-amber { background: #fef3c7; color: #92400e; }
+    .tag-red   { background: #fee2e2; color: #991b1b; }
+    .tag-blue  { background: #dbeafe; color: #1e40af; }
+    .tag-gray  { background: #f3f4f6; color: #374151; }
+    .pct-bar {
+      height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; min-width: 80px;
+    }
+    .pct-fill { height: 100%; border-radius: 4px; }
+    .flex-center { display: flex; align-items: center; gap: 8px; }
+    .footer { font-size: 11px; color: #999; margin-top: 32px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<h1>TY25 Detach / Unassign WIP Test &mdash; Full Read</h1>
+<p class="subtitle">
+  Comparing 3 cohorts from the 3/9 low-intent FS WIP list: <b>Detach messaging</b> (45%), <b>Unassign messaging</b> (45%), <b>Holdout</b> (10%).<br/>
+  Goal: Develop a perspective on which path (detach vs. unassign) to lean into for rest of season while clearing WIP to protect expert time.
+</p>
+
+<div class="section">
+  <h2>Timeline of Events</h2>
+  <div class="card">
+    <div class="timeline">
+      <div class="tl-node"><div class="tl-date">3/9</div><div class="tl-dot"></div><div class="tl-label">List pulled &amp; randomized</div></div>
+      <div class="tl-line"></div>
+      <div class="tl-node"><div class="tl-date">3/10</div><div class="tl-dot green"></div><div class="tl-label">Stick messages sent</div></div>
+      <div class="tl-line"></div>
+      <div class="tl-node"><div class="tl-date">3/17</div><div class="tl-dot"></div><div class="tl-label">Initial test read</div></div>
+      <div class="tl-line"></div>
+      <div class="tl-node"><div class="tl-date">3/19</div><div class="tl-dot amber"></div><div class="tl-label">Lists scrubbed; Unassign executed</div></div>
+      <div class="tl-line"></div>
+      <div class="tl-node"><div class="tl-date">3/20</div><div class="tl-dot red"></div><div class="tl-label">Detach failed (circuit breaker)</div></div>
+      <div class="tl-line"></div>
+      <div class="tl-node"><div class="tl-date">3/24</div><div class="tl-dot green"></div><div class="tl-label">Detach re-run (6,015 success)</div></div>
+      <div class="tl-line"></div>
+      <div class="tl-node"><div class="tl-date">3/25</div><div class="tl-dot"></div><div class="tl-label">This analysis</div></div>
+    </div>
+    <div class="callout warning">
+      <b>Timing caveat:</b> Unassign was executed 5 days earlier than detach (3/19 vs 3/24 night). 
+      The unassign cohort has had more time to show re-engagement. Detach only completed last night &mdash; it is <b>too early</b> 
+      to draw definitive conclusions on detach outcomes. This read captures messaging + unassign effects more maturely.
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Cohort Overview (Full Original Messaging List)</h2>
+  <div class="kpi-row">
+    <div class="kpi blue"><div class="kpi-label">Detach Messaging</div><div class="kpi-value">17,753</div><div class="kpi-sub">~6.1K actually detached 3/24</div></div>
+    <div class="kpi amber"><div class="kpi-label">Unassign Messaging</div><div class="kpi-value">17,758</div><div class="kpi-sub">~3.7K actually unassigned 3/19</div></div>
+    <div class="kpi"><div class="kpi-label">Holdout (Control)</div><div class="kpi-value">3,946</div><div class="kpi-sub">No message, no action</div></div>
+    <div class="kpi green"><div class="kpi-label">Total Experiment</div><div class="kpi-value">39,457</div><div class="kpi-sub">Low-intent FS WIP engagements</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Key Metrics Comparison</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Holdout<br/><span style="font-weight:400;font-size:11px">(n=3,946)</span></th>
+          <th>Unassign Msg<br/><span style="font-weight:400;font-size:11px">(n=17,758)</span></th>
+          <th>Detach Msg<br/><span style="font-weight:400;font-size:11px">(n=17,753)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>FS Filed (Post File)</b></td>
+          <td><b>21</b> <span class="tag tag-green">0.53%</span></td>
+          <td><b>97</b> <span class="tag tag-green">0.55%</span></td>
+          <td><b>88</b> <span class="tag tag-green">0.50%</span></td>
+        </tr>
+        <tr>
+          <td><b>FS Completed (Closed, not filed)</b></td>
+          <td><b>106</b> <span class="tag tag-gray">2.69%</span></td>
+          <td><b>485</b> <span class="tag tag-gray">2.73%</span></td>
+          <td><b>942</b> <span class="tag tag-amber">5.31%</span></td>
+        </tr>
+        <tr>
+          <td><b>WIP Progressed (beyond Welcome Call)</b></td>
+          <td><b>574</b> <span class="tag tag-blue">14.55%</span></td>
+          <td><b>2,616</b> <span class="tag tag-blue">14.73%</span></td>
+          <td><b>2,657</b> <span class="tag tag-blue">14.97%</span></td>
+        </tr>
+        <tr>
+          <td><b>WIP No Progress (Welcome Call)</b></td>
+          <td><b>3,243</b> <span class="tag tag-red">82.18%</span></td>
+          <td><b>14,548</b> <span class="tag tag-red">81.92%</span></td>
+          <td><b>14,057</b> <span class="tag tag-red">79.18%</span></td>
+        </tr>
+        <tr>
+          <td><b>Re-engaged in DIWM (auth-level)</b></td>
+          <td><b>2</b> <span class="tag tag-gray">0.05%</span></td>
+          <td><b>7</b> <span class="tag tag-gray">0.04%</span></td>
+          <td><b>10</b> <span class="tag tag-gray">0.06%</span></td>
+        </tr>
+        <tr>
+          <td><b>Franchise Complete (any SKU)</b></td>
+          <td colspan="3" style="text-align:center;color:#999;">Too early &mdash; completion data not yet populated for most</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>FS Filing Rate Comparison (Normalized)</h2>
+  <div class="chart-row">
+    <div class="chart-box">
+      <canvas id="filingChart" height="280"></canvas>
+    </div>
+    <div class="chart-box">
+      <canvas id="statusChart" height="280"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Current FS Engagement Status Distribution</h2>
+  <div class="chart-row">
+    <div class="chart-box">
+      <canvas id="milestoneChart" height="300"></canvas>
+    </div>
+    <div class="chart-box">
+      <canvas id="engStatusChart" height="300"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Engagement Status Detail by Milestone</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Milestone</th><th colspan="2">Holdout</th><th colspan="2">Unassign</th><th colspan="2">Detach</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Welcome Call</td>
+          <td>3,324</td><td><span class="tag tag-gray">84.2%</span></td>
+          <td>14,920</td><td><span class="tag tag-gray">84.0%</span></td>
+          <td>14,850</td><td><span class="tag tag-gray">83.6%</span></td>
+        </tr>
+        <tr>
+          <td>Gathering Info</td>
+          <td>574</td><td><span class="tag tag-blue">14.5%</span></td>
+          <td>2,586</td><td><span class="tag tag-blue">14.6%</span></td>
+          <td>2,677</td><td><span class="tag tag-blue">15.1%</span></td>
+        </tr>
+        <tr>
+          <td>Tax Prep Start</td>
+          <td>12</td><td><span class="tag tag-green">0.3%</span></td>
+          <td>76</td><td><span class="tag tag-green">0.4%</span></td>
+          <td>71</td><td><span class="tag tag-green">0.4%</span></td>
+        </tr>
+        <tr>
+          <td>Client Review</td>
+          <td>7</td><td>0.2%</td>
+          <td>23</td><td>0.1%</td>
+          <td>16</td><td>0.1%</td>
+        </tr>
+        <tr>
+          <td>Filing / Post File</td>
+          <td>23</td><td><span class="tag tag-green">0.6%</span></td>
+          <td>105</td><td><span class="tag tag-green">0.6%</span></td>
+          <td>108</td><td><span class="tag tag-green">0.6%</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Analysis &amp; Recommendations</h2>
+  <div class="card">
+    <div class="callout">
+      <b>Key Finding 1: Messaging alone drove the dominant effect.</b> Both treatment cohorts show nearly identical FS filing rates (~0.5%) and re-engagement patterns compared to holdout (0.53%). The messaging itself &mdash; not the actual detach/unassign action &mdash; appears to be the primary driver of any behavior change observed so far.
+    </div>
+    <div class="callout">
+      <b>Key Finding 2: Detach created more "closed" engagements.</b> The detach cohort has 5.31% completed-but-not-filed engagements vs. 2.73% for unassign and 2.69% for holdout. This 2.6pp delta reflects the detach process closing the FS engagement. These customers' FS engagements were revoked, which means their engagement was completed (closed) without filing &mdash; not that they abandoned on their own.
+    </div>
+    <div class="callout warning">
+      <b>Key Finding 3: Too early for definitive conclusions on detach vs unassign.</b> Detach was only executed last night (3/24). The DIWM re-engagement, franchise completion, and revenue data will take days to materialize. Recommend re-reading this test in <b>3-5 days</b> to see if detached customers re-engage in DIWM/DIY and at what rate.
+    </div>
+    <div class="callout">
+      <b>Key Finding 4: ~80% of all cohorts remain at Welcome Call with no progress.</b> This confirms the original low-intent classification was accurate. These engagements are consuming expert capacity without customer action.
+    </div>
+
+    <h2 style="margin-top:24px">Preliminary Directional Perspective</h2>
+    <p style="margin-top:8px; font-size: 14px; line-height: 1.7;">
+      <b>For rest of season WIP clearing:</b> Both paths are viable for clearing WIP to protect expert time. The <b>unassign</b> path is operationally simpler (fewer system failures, no circuit breaker issues) and frees expert capacity while keeping the customer in FS &mdash; preserving the option for them to return. <b>Detach</b> is a harder action (moves customer out of FS entirely) but may drive franchise completion via DIWM if customers re-engage on their own.
+    </p>
+    <p style="margin-top:12px; font-size: 14px; line-height: 1.7;">
+      <b>Recommended next read:</b> 3/28-3/30 for mature detach outcomes. Key metrics to watch: (1) DIWM re-engagement rate for detached customers, (2) franchise completion rate across all 3 cohorts, (3) revenue per customer. If detach customers show meaningful DIWM completion, that favors the detach path. If not, unassign is the lower-risk path with equivalent WIP clearing.
+    </p>
+  </div>
+</div>
+
+<p class="footer">
+  Data as of 3/25/2026 &bull; Source: cgan_ustax_published.lh_detach_test_full_read &bull; 
+  Cohorts from 3/9 randomized list &bull; Messages sent 3/10 &bull; Unassign 3/19 night &bull; Detach 3/24 night
+</p>
+
+<script>
+const cohorts = ['Holdout','Unassign Msg','Detach Msg'];
+const blue = '#3b82f6', amber = '#f59e0b', indigo = '#4f46e5', green = '#10b981', red = '#ef4444', gray = '#9ca3af';
+
+new Chart(document.getElementById('filingChart'),{
+  type:'bar',
+  data:{
+    labels: cohorts,
+    datasets:[
+      {label:'FS Filed (Post File)', data:[0.53,0.55,0.50], backgroundColor: green, borderRadius:6},
+      {label:'FS Completed (not filed)', data:[2.69,2.73,5.31], backgroundColor: amber, borderRadius:6},
+    ]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      title:{display:true, text:'FS Completion Rate (%)', font:{size:14,weight:'bold'}},
+      legend:{position:'bottom'},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}
+    },
+    scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}, title:{display:true,text:'% of cohort'}}}
+  }
+});
+
+new Chart(document.getElementById('statusChart'),{
+  type:'bar',
+  data:{
+    labels: cohorts,
+    datasets:[
+      {label:'WIP Progressed', data:[14.55,14.73,14.97], backgroundColor: blue, borderRadius:6},
+      {label:'WIP No Progress', data:[82.18,81.92,79.18], backgroundColor: gray, borderRadius:6},
+    ]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      title:{display:true, text:'WIP Status (%)', font:{size:14,weight:'bold'}},
+      legend:{position:'bottom'},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}
+    },
+    scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}, title:{display:true,text:'% of cohort'}}}
+  }
+});
+
+new Chart(document.getElementById('milestoneChart'),{
+  type:'bar',
+  data:{
+    labels: ['Welcome Call','Gathering Info','Tax Prep','Client Review','Filing/Post File'],
+    datasets:[
+      {label:'Holdout', data:[84.2,14.5,0.3,0.2,0.6], backgroundColor: indigo, borderRadius:4},
+      {label:'Unassign', data:[84.0,14.6,0.4,0.1,0.6], backgroundColor: amber, borderRadius:4},
+      {label:'Detach', data:[83.6,15.1,0.4,0.1,0.6], backgroundColor: green, borderRadius:4},
+    ]
+  },
+  options:{
+    responsive:true,
+    indexAxis:'y',
+    plugins:{
+      title:{display:true, text:'Current Milestone Distribution (%)', font:{size:14,weight:'bold'}},
+      legend:{position:'bottom'},
+      tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.raw+'%'}}
+    },
+    scales:{x:{beginAtZero:true, ticks:{callback:v=>v+'%'}}}
+  }
+});
+
+new Chart(document.getElementById('engStatusChart'),{
+  type:'doughnut',
+  data:{
+    labels:['PAUSED','IN_PROGRESS','COMPLETED','CREATED/Other'],
+    datasets:[{
+      label:'All Cohorts',
+      data:[
+        (12280+11924+2752+2238+2279+487+50+53+5+15+13+1+5+1+6+1+2+1+14+9+15+2),
+        (2265+2124+491+243+250+63+20+13+5+8+1+6+3+6+5+3+12+2+1+2),
+        (372+793+81+104+140+23+96+87+21+5+5+2+4+2+2+1+1),
+        (3+9+1+8+2+1+3+1+1+9+12+2)
+      ],
+      backgroundColor:[amber,'#60a5fa',green,'#d1d5db'],
+      borderWidth:2,
+      borderColor:'#fff'
+    }]
+  },
+  options:{
+    responsive:true,
+    plugins:{
+      title:{display:true, text:'Overall Engagement Status (All Cohorts)', font:{size:14,weight:'bold'}},
+      legend:{position:'bottom'}
+    }
+  }
+});
+</script>
+</body>
+</html>
