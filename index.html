@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Full Stack Detach / Unassign Test Read — Timing Analysis</title>
+<title>FS WIP Detach / Unassign Test — Statistical Analysis</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <style>
   :root {
     --c-holdout: #6366f1;
+    --c-holdout-li: #a855f7;
     --c-detach: #ef4444;
     --c-unassign: #22c55e;
     --c-bg: #f8fafc;
@@ -19,7 +20,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--c-bg); color: var(--c-text); line-height: 1.6; }
-  .container { max-width: 1280px; margin: 0 auto; padding: 24px; }
+  .container { max-width: 1360px; margin: 0 auto; padding: 24px; }
   h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
   .subtitle { color: var(--c-muted); font-size: 15px; margin-bottom: 32px; }
   h2 { font-size: 20px; font-weight: 600; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--c-border); }
@@ -27,7 +28,8 @@
   .card { background: var(--c-card); border: 1px solid var(--c-border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-  @media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
   .chart-wrap { position: relative; height: 350px; }
   .chart-wrap-tall { position: relative; height: 420px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -36,32 +38,34 @@
   td:first-child, th:first-child { text-align: left; }
   .badge { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
   .badge-holdout { background: #e0e7ff; color: #4338ca; }
+  .badge-holdout-li { background: #f3e8ff; color: #7e22ce; }
   .badge-detach { background: #fee2e2; color: #b91c1c; }
   .badge-unassign { background: #dcfce7; color: #15803d; }
   .callout { border-left: 4px solid var(--c-accent); background: #eff6ff; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 14px; }
   .callout-warn { border-left-color: #f59e0b; background: #fffbeb; }
   .callout-green { border-left-color: #22c55e; background: #f0fdf4; }
+  .callout-red { border-left-color: #ef4444; background: #fef2f2; }
   .metric-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
   .metric-box { flex: 1; min-width: 180px; background: var(--c-card); border: 1px solid var(--c-border); border-radius: 10px; padding: 16px; text-align: center; }
   .metric-box .val { font-size: 28px; font-weight: 700; }
   .metric-box .lbl { font-size: 12px; color: var(--c-muted); margin-top: 4px; }
-  .timeline-bar { display: flex; align-items: center; gap: 0; margin: 20px 0; position: relative; }
-  .tl-seg { height: 6px; position: relative; }
-  .tl-marker { position: absolute; top: -28px; font-size: 11px; font-weight: 600; white-space: nowrap; }
-  .tl-marker::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 2px; height: 16px; background: currentColor; }
-  .tl-marker-bottom { position: absolute; bottom: -28px; font-size: 11px; white-space: nowrap; color: var(--c-muted); }
-  .legend-row { display: flex; gap: 24px; justify-content: center; margin: 16px 0; font-size: 13px; }
-  .legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 6px; }
-  .section-intro { color: var(--c-muted); font-size: 14px; margin-bottom: 16px; }
-  .highlight { font-weight: 700; }
+  .sig { color: #dc2626; font-weight: 700; }
+  .not-sig { color: #9ca3af; }
+  .p-val { font-family: 'SF Mono', 'Menlo', monospace; font-size: 12px; }
+  .itc-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .itc-up { background: #dcfce7; color: #15803d; }
+  .itc-down { background: #fee2e2; color: #b91c1c; }
+  .itc-neutral { background: #f1f5f9; color: #64748b; }
   .text-sm { font-size: 13px; }
+  .stat-table td { font-size: 12px; }
+  .stat-table th { font-size: 11px; }
 </style>
 </head>
 <body>
 <div class="container">
 
-<h1>FS WIP Detach / Unassign Test — Full Timing Analysis</h1>
-<p class="subtitle">Test population: low-intent FS WIP engagements | Messages sent ~3/9–3/10 | Unassigned 3/19 | Detached 3/24 | Data as of 3/25</p>
+<h1>FS WIP Detach / Unassign Test — Statistical Analysis</h1>
+<p class="subtitle">Dual holdout comparison with ITC &amp; p-values | Messages ~3/9–3/10 | Unassigned 3/19 | Detached 3/24 | Data as of 3/25</p>
 
 <!-- ── TIMELINE ── -->
 <h2>Test Timeline</h2>
@@ -80,12 +84,6 @@
       <div style="width:10px;height:10px;background:#22c55e;border-radius:50%;margin:0 auto"></div>
       <div style="font-size:10px;color:#64748b;margin-top:4px">Unassign<br>Executed</div>
     </div>
-    <div style="position:absolute;left:43%;top:12px;text-align:center;transform:translateX(-50%)">
-      <div style="font-size:11px;font-weight:700;color:#f59e0b">3/20</div>
-      <div style="width:2px;height:14px;background:#f59e0b;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#f59e0b;border-radius:50%;margin:0 auto"></div>
-      <div style="font-size:10px;color:#64748b;margin-top:4px">Detach<br>Attempt 1<br><span style="color:#ef4444;font-weight:600">Partial</span></div>
-    </div>
     <div style="position:absolute;left:85%;top:12px;text-align:center;transform:translateX(-50%)">
       <div style="font-size:11px;font-weight:700;color:#ef4444">3/24</div>
       <div style="width:2px;height:14px;background:#ef4444;margin:2px auto"></div>
@@ -99,17 +97,18 @@
       <div style="font-size:10px;color:#64748b;margin-top:4px">This<br>Read</div>
     </div>
   </div>
-  <div class="callout-warn callout">
-    <strong>Timing context:</strong> Unassign cohort has had <strong>6 days</strong> post-action. Detach cohort has had only <strong>1 day</strong> post-action (re-run on 3/24). However, ~377 detach engagements were partially detached on 3/20 (5 days ago). All cohorts received messages ~15 days ago.
-  </div>
 </div>
 
 <!-- ── COHORT OVERVIEW ── -->
 <h2>Cohort Overview</h2>
-<div class="grid-3">
+<div class="grid-4">
   <div class="metric-box">
     <div class="val" style="color:var(--c-holdout)">3,946</div>
-    <div class="lbl">Holdout (10%)<br>No message, no action</div>
+    <div class="lbl">Holdout — Full (10%)<br>No message, no action</div>
+  </div>
+  <div class="metric-box" style="border-color: var(--c-holdout-li)">
+    <div class="val" style="color:var(--c-holdout-li)">1,602</div>
+    <div class="lbl">Holdout — Low Intent Only<br>Filtered to match treatment scrub</div>
   </div>
   <div class="metric-box">
     <div class="val" style="color:var(--c-detach)">17,753</div>
@@ -120,326 +119,430 @@
     <div class="lbl">Unassign Messaging (45%)<br>Unassigned 3/19</div>
   </div>
 </div>
+<div class="callout-warn callout">
+  <strong>Two holdout groups:</strong> The "Full" holdout (3,946) includes all random-assigned holdout engagements (including those with actions — appts, docs, chats). The "Low Intent" holdout (1,602) is filtered to only those with no customer actions, matching the scrubbed treatment lists. Comparisons against the low-intent holdout are the more apples-to-apples comparison for the treatment groups.
+</div>
 
-<!-- ── FRANCHISE COMPLETION ── -->
-<h2>1. Franchise Completion (FS Filed + DIWM/DIY Completed)</h2>
-<p class="section-intro">Franchise completion = filed via FS (filing_end_ts) OR completed via DIWM/DIY. Currently all completions are FS-filed; no DIWM/DIY completions detected post-message.</p>
+<!-- ── MAIN STAT TABLE ── -->
+<h2>1. Key Metrics — Statistical Comparison</h2>
+<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">ITC = Index to Control (treatment rate ÷ control rate × 100). Values >100 = treatment outperforms control. p-values from chi-square (n≥5) or Fisher's exact (n<5). *** = p < 0.05.</p>
 
+<div class="card">
+<h3>vs Full Holdout (n=3,946)</h3>
+<table class="stat-table">
+  <tr>
+    <th style="text-align:left">Metric</th>
+    <th><span class="badge badge-holdout">Holdout Full</span></th>
+    <th><span class="badge badge-detach">Detach</span></th>
+    <th>ITC</th>
+    <th>p-value</th>
+    <th><span class="badge badge-unassign">Unassign</span></th>
+    <th>ITC</th>
+    <th>p-value</th>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>FS Filing Rate</strong></td>
+    <td>0.56%<br><span class="text-sm" style="color:var(--c-muted)">22/3,946</span></td>
+    <td>0.59%<br><span class="text-sm" style="color:var(--c-muted)">104/17,753</span></td>
+    <td><span class="itc-badge itc-neutral">105.1</span></td>
+    <td class="p-val not-sig">0.924</td>
+    <td>0.61%<br><span class="text-sm" style="color:var(--c-muted)">109/17,758</span></td>
+    <td><span class="itc-badge itc-neutral">110.1</span></td>
+    <td class="p-val not-sig">0.765</td>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>WIP Clearing (off-queue)</strong></td>
+    <td>88.1%<br><span class="text-sm" style="color:var(--c-muted)">3,477/3,946</span></td>
+    <td>92.8%<br><span class="text-sm" style="color:var(--c-muted)">16,469/17,753</span></td>
+    <td><span class="itc-badge itc-up">105.3</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+    <td>87.7%<br><span class="text-sm" style="color:var(--c-muted)">15,572/17,758</span></td>
+    <td><span class="itc-badge itc-neutral">99.5</span></td>
+    <td class="p-val not-sig">0.478</td>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>Completed Not Filed</strong><br><span class="text-sm" style="color:var(--c-muted)">(system closures)</span></td>
+    <td>2.81%<br><span class="text-sm" style="color:var(--c-muted)">111/3,946</span></td>
+    <td>39.5%<br><span class="text-sm" style="color:var(--c-muted)">7,010/17,753</span></td>
+    <td><span class="itc-badge itc-up">1404</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+    <td>2.91%<br><span class="text-sm" style="color:var(--c-muted)">517/17,758</span></td>
+    <td><span class="itc-badge itc-neutral">103.5</span></td>
+    <td class="p-val not-sig">0.779</td>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>Appt Handled Post-Msg</strong></td>
+    <td>0.84%<br><span class="text-sm" style="color:var(--c-muted)">33/3,946</span></td>
+    <td>0.84%<br><span class="text-sm" style="color:var(--c-muted)">150/17,753</span></td>
+    <td><span class="itc-badge itc-neutral">101.0</span></td>
+    <td class="p-val not-sig">1.000</td>
+    <td>0.95%<br><span class="text-sm" style="color:var(--c-muted)">168/17,758</span></td>
+    <td><span class="itc-badge itc-neutral">113.1</span></td>
+    <td class="p-val not-sig">0.576</td>
+  </tr>
+</table>
+</div>
+
+<div class="card">
+<h3>vs Low-Intent Holdout (n=1,602) — More comparable to scrubbed treatment lists</h3>
+<table class="stat-table">
+  <tr>
+    <th style="text-align:left">Metric</th>
+    <th><span class="badge badge-holdout-li">Holdout LI</span></th>
+    <th><span class="badge badge-detach">Detach</span></th>
+    <th>ITC</th>
+    <th>p-value</th>
+    <th><span class="badge badge-unassign">Unassign</span></th>
+    <th>ITC</th>
+    <th>p-value</th>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>FS Filing Rate</strong></td>
+    <td>0.00%<br><span class="text-sm" style="color:var(--c-muted)">0/1,602</span></td>
+    <td>0.59%<br><span class="text-sm" style="color:var(--c-muted)">104/17,753</span></td>
+    <td><span class="itc-badge itc-up">∞</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+    <td>0.61%<br><span class="text-sm" style="color:var(--c-muted)">109/17,758</span></td>
+    <td><span class="itc-badge itc-up">∞</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>WIP Clearing (off-queue)</strong></td>
+    <td>87.9%<br><span class="text-sm" style="color:var(--c-muted)">1,408/1,602</span></td>
+    <td>92.8%<br><span class="text-sm" style="color:var(--c-muted)">16,469/17,753</span></td>
+    <td><span class="itc-badge itc-up">105.5</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+    <td>87.7%<br><span class="text-sm" style="color:var(--c-muted)">15,572/17,758</span></td>
+    <td><span class="itc-badge itc-neutral">99.8</span></td>
+    <td class="p-val not-sig">0.846</td>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>Completed Not Filed</strong><br><span class="text-sm" style="color:var(--c-muted)">(system closures)</span></td>
+    <td>0.44%<br><span class="text-sm" style="color:var(--c-muted)">7/1,602</span></td>
+    <td>39.5%<br><span class="text-sm" style="color:var(--c-muted)">7,010/17,753</span></td>
+    <td><span class="itc-badge itc-up">9037</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+    <td>2.91%<br><span class="text-sm" style="color:var(--c-muted)">517/17,758</span></td>
+    <td><span class="itc-badge itc-up">666</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+  </tr>
+  <tr>
+    <td style="text-align:left"><strong>Appt Handled Post-Msg</strong></td>
+    <td>0.00%<br><span class="text-sm" style="color:var(--c-muted)">0/1,602</span></td>
+    <td>0.84%<br><span class="text-sm" style="color:var(--c-muted)">150/17,753</span></td>
+    <td><span class="itc-badge itc-up">∞</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+    <td>0.95%<br><span class="text-sm" style="color:var(--c-muted)">168/17,758</span></td>
+    <td><span class="itc-badge itc-up">∞</span></td>
+    <td class="p-val sig">< 0.001 ***</td>
+  </tr>
+</table>
+<div class="callout-red callout" style="margin-top:16px">
+  <strong>Critical finding:</strong> The low-intent holdout has <strong>zero</strong> FS filings and <strong>zero</strong> appointments post-message. Against this baseline, both treatments show statistically significant lifts (p < 0.001). This suggests the messaging + action did activate some behavior in customers who would otherwise have remained completely dormant. However, the absolute magnitude remains small (~0.6% FS filing rate).
+</div>
+</div>
+
+<!-- ── FS FILING WINDOWS ── -->
+<h2>2. FS Filing by Time Window</h2>
+<div class="grid-2">
+<div class="card">
+  <h3>vs Full Holdout</h3>
+  <table class="stat-table">
+    <tr><th>Window</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach</span></th><th>ITC</th><th>p</th><th><span class="badge badge-unassign">Unassign</span></th><th>ITC</th><th>p</th></tr>
+    <tr><td>0–3 days</td><td>0.10%</td><td>0.07%</td><td><span class="itc-badge itc-down">72</span></td><td class="not-sig">0.53</td><td>0.09%</td><td><span class="itc-badge itc-down">89</span></td><td class="not-sig">0.77</td></tr>
+    <tr><td>0–5 days</td><td>0.18%</td><td>0.15%</td><td><span class="itc-badge itc-down">83</span></td><td class="not-sig">0.82</td><td>0.19%</td><td><span class="itc-badge itc-neutral">105</span></td><td class="not-sig">1.00</td></tr>
+    <tr><td>0–7 days</td><td>0.35%</td><td>0.24%</td><td><span class="itc-badge itc-down">67</span></td><td class="not-sig">0.25</td><td>0.28%</td><td><span class="itc-badge itc-down">79</span></td><td class="not-sig">0.55</td></tr>
+    <tr><td>0–10 days</td><td>0.51%</td><td>0.35%</td><td><span class="itc-badge itc-down">69</span></td><td class="not-sig">0.19</td><td>0.42%</td><td><span class="itc-badge itc-down">83</span></td><td class="not-sig">0.55</td></tr>
+    <tr><td>0–15 days</td><td>0.56%</td><td>0.59%</td><td><span class="itc-badge itc-neutral">105</span></td><td class="not-sig">0.92</td><td>0.61%</td><td><span class="itc-badge itc-neutral">110</span></td><td class="not-sig">0.76</td></tr>
+  </table>
+  <p class="text-sm" style="margin-top:8px;color:var(--c-muted)">No significant differences. Both treatments track close to full holdout.</p>
+</div>
+<div class="card">
+  <h3>vs Low-Intent Holdout</h3>
+  <table class="stat-table">
+    <tr><th>Window</th><th><span class="badge badge-holdout-li">LI Hold</span></th><th><span class="badge badge-detach">Detach</span></th><th>p</th><th><span class="badge badge-unassign">Unassign</span></th><th>p</th></tr>
+    <tr><td>0–3 days</td><td>0.00%</td><td>0.07%</td><td class="not-sig">0.62</td><td>0.09%</td><td class="not-sig">0.64</td></tr>
+    <tr><td>0–5 days</td><td>0.00%</td><td>0.15%</td><td class="not-sig">0.27</td><td>0.19%</td><td class="not-sig">0.11</td></tr>
+    <tr><td>0–7 days</td><td>0.00%</td><td>0.24%</td><td class="sig">0.047 *</td><td>0.28%</td><td class="sig">0.033 *</td></tr>
+    <tr><td>0–10 days</td><td>0.00%</td><td>0.35%</td><td class="sig">0.009 **</td><td>0.42%</td><td class="sig">0.003 **</td></tr>
+    <tr><td>0–15 days</td><td>0.00%</td><td>0.59%</td><td class="sig">< 0.001 ***</td><td>0.61%</td><td class="sig">< 0.001 ***</td></tr>
+  </table>
+  <p class="text-sm" style="margin-top:8px;color:var(--c-muted)">Low-intent holdout = 0 filings. Significance emerges after day 7. Both treatments lift FS filing from a zero baseline.</p>
+</div>
+</div>
+
+<!-- ── FRANCHISE COMPLETION CURVES ── -->
+<h2>3. Cumulative FS Filings — Post Message</h2>
 <div class="grid-2">
   <div class="card">
-    <h3>Cumulative Franchise Completions After Message (per 1,000 engagements)</h3>
+    <h3>Cumulative FS Filings per 1,000 Engagements</h3>
     <div class="chart-wrap"><canvas id="chartCompCurve"></canvas></div>
   </div>
   <div class="card">
-    <h3>Completion Windows — Post Message</h3>
-    <table>
-      <tr><th>Window</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
-      <tr><td>0–3 days</td><td>0.51</td><td>0.62</td><td>0.68</td></tr>
-      <tr><td>0–5 days</td><td>1.27</td><td>1.35</td><td>1.63</td></tr>
-      <tr><td>0–7 days</td><td>3.04</td><td>2.20</td><td>2.53</td></tr>
-      <tr><td>0–10 days</td><td>4.56</td><td>3.32</td><td>3.83</td></tr>
-      <tr><td>0–15 days</td><td>4.81</td><td>4.90</td><td>5.29</td></tr>
+    <h3>Post-Action Filing Windows</h3>
+    <table class="stat-table">
+      <tr><th>Window</th><th><span class="badge badge-detach">Detach</span><br><span class="text-sm">(after 3/24)</span></th><th><span class="badge badge-unassign">Unassign</span><br><span class="text-sm">(after 3/19)</span></th><th>p-value</th></tr>
+      <tr><td>0–1 day</td><td>18 (1.0/1K)</td><td>16 (0.9/1K)</td><td class="not-sig">0.863</td></tr>
+      <tr><td>0–3 days</td><td>18 (1.0/1K)</td><td>31 (1.7/1K)</td><td class="not-sig">0.086</td></tr>
+      <tr><td>0–5 days</td><td>18 (1.0/1K)</td><td>42 (2.4/1K)</td><td class="sig">0.003 **</td></tr>
+      <tr><td>0–7 days</td><td>18 (1.0/1K)</td><td>50 (2.8/1K)</td><td class="sig">< 0.001 ***</td></tr>
     </table>
-    <p class="text-sm" style="margin-top:12px;color:var(--c-muted)">Per 1,000 engagements. All three cohorts show similar franchise completion rates (~5/1K). No statistically meaningful difference between treatments and holdout from messaging alone.</p>
-  </div>
-</div>
-
-<div class="card">
-  <h3>Completion Windows — Post Action (Unassign 3/19 | Detach 3/24)</h3>
-  <div class="grid-2">
-    <div>
-      <table>
-        <tr><th>Window</th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
-        <tr><td>0–1 day post-action</td><td>5 (0.3/1K)</td><td>15 (0.8/1K)</td></tr>
-        <tr><td>0–3 days post-action</td><td>5 (0.3/1K)</td><td>30 (1.7/1K)</td></tr>
-        <tr><td>0–5 days post-action</td><td>5 (0.3/1K)</td><td>41 (2.3/1K)</td></tr>
-        <tr><td>0–7 days post-action</td><td>5 (0.3/1K)</td><td>41 (2.3/1K)</td></tr>
-      </table>
-    </div>
-    <div>
-      <div class="callout-warn callout">
-        <strong>Critical caveat:</strong> Detach re-run was only 1 day ago (3/24). The 5 completions likely reflect the partial 3/20 batch. Unassign has 6 full days of post-action data. <strong>Not apples-to-apples yet.</strong>
-      </div>
+    <div class="callout-warn callout" style="margin-top:12px">
+      <strong>Timing gap:</strong> Detach re-run was 3/24 (1 day ago). Unassign was 3/19 (6 days ago). Detach's 18 filings in 1 day is comparable to unassign's 16 at the same time mark. The divergence at 5+ days reflects unassign's longer observation window, not necessarily better performance.
     </div>
   </div>
 </div>
 
-<!-- ── FS ACTIONS ── -->
-<h2>2. FS Re-engagement Actions (Post-Message)</h2>
-<p class="section-intro">FS actions = any handled interaction, appointment, or milestone progression (info gathering, tax prep, client review, handoff). Measures whether messaging prompted customers to re-engage with their FS engagement.</p>
-
+<!-- ── ENGAGEMENT STATE ── -->
+<h2>4. Current Engagement State</h2>
 <div class="grid-2">
   <div class="card">
-    <h3>Cumulative FS Actions After Message (per 1,000 engagements)</h3>
-    <div class="chart-wrap"><canvas id="chartActionCurve"></canvas></div>
+    <h3>Engagement State Distribution</h3>
+    <div class="chart-wrap"><canvas id="chartState"></canvas></div>
   </div>
   <div class="card">
-    <h3>Action Windows — Post Message</h3>
-    <table>
-      <tr><th>Window</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
-      <tr><td>0–3 days</td><td>4.6</td><td>3.8</td><td>5.4</td></tr>
-      <tr><td>0–5 days</td><td>7.6</td><td>5.4</td><td>7.1</td></tr>
-      <tr><td>0–7 days</td><td>9.1</td><td>7.7</td><td>9.0</td></tr>
-      <tr><td>0–10 days</td><td>10.1</td><td>10.2</td><td>11.4</td></tr>
-      <tr><td>0–15 days</td><td>12.7</td><td>13.3</td><td>14.6</td></tr>
+    <h3>Detailed Breakdown</h3>
+    <table class="stat-table">
+      <tr><th>State</th><th><span class="badge badge-holdout">Full</span></th><th><span class="badge badge-holdout-li">Low Int</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
+      <tr><td>WIP w/ Expert</td><td>469 (11.9%)</td><td>194 (12.1%)</td><td>1,284 (7.2%)</td><td>2,186 (12.3%)</td></tr>
+      <tr><td>WIP No Expert</td><td>95 (2.4%)</td><td>19 (1.2%)</td><td>243 (1.4%)</td><td>362 (2.0%)</td></tr>
+      <tr><td>Completed — Filed</td><td>22 (0.6%)</td><td>0 (0.0%)</td><td>100 (0.6%)</td><td>107 (0.6%)</td></tr>
+      <tr><td>Completed — Not Filed</td><td>111 (2.8%)</td><td>7 (0.4%)</td><td>7,010 (39.5%)</td><td>517 (2.9%)</td></tr>
     </table>
-    <p class="text-sm" style="margin-top:12px;color:var(--c-muted)">Per 1,000 engagements. Unassign shows slightly higher 15-day action rate (14.6/1K) vs holdout (12.7/1K), suggesting messaging may prompt marginal re-engagement. Detach is comparable (13.3/1K).</p>
+    <div class="callout-green callout" style="margin-top:12px">
+      <strong>Detach cleared 39.5% to "Completed" status</strong> — the detach action itself closed these engagements. Only 7.2% of detach cohort still has an expert assigned vs 12.3% for unassign and 12.1% for low-intent holdout.
+    </div>
   </div>
-</div>
-
-<div class="card">
-  <h3>Action Windows — Post Action (Unassign 3/19 | Detach 3/24)</h3>
-  <table>
-    <tr><th>Window</th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
-    <tr><td>0–1 day post-action</td><td>6 (0.3/1K)</td><td>24 (1.4/1K)</td></tr>
-    <tr><td>0–3 days post-action</td><td>6 (0.3/1K)</td><td>51 (2.9/1K)</td></tr>
-    <tr><td>0–5 days post-action</td><td>6 (0.3/1K)</td><td>81 (4.6/1K)</td></tr>
-  </table>
-  <p class="text-sm" style="margin-top:12px;color:var(--c-muted)">Unassign customers continue to take FS actions at ~4.6/1K within 5 days after unassignment — they can still progress their FS engagement since the engagement is still live (just expert removed). Detach only 1 day old.</p>
-</div>
-
-<!-- ── DIWM RE-ENGAGEMENT ── -->
-<h2>3. DIWM/DIY Re-engagement</h2>
-<div class="card">
-  <div class="callout">
-    <strong>No DIWM/DIY re-engagement detected post-message across any cohort.</strong> The DIWM funnel shows ~10 detach-cohort and ~7 unassign-cohort customers with prior DIWM starts (all before the message date). Zero new DIWM/DIY starts after 3/10 in any cohort. This is expected given: (1) detach just happened 3/24, (2) these are FS-intent customers who may need more time to switch, (3) the pathway from detach → DIWM re-engagement involves multiple steps.
-  </div>
-  <table>
-    <tr><th>Metric</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
-    <tr><td>DIWM/DIY started (ever)</td><td>2 (0.05%)</td><td>10 (0.06%)</td><td>7 (0.04%)</td></tr>
-    <tr><td>Started after message</td><td>0</td><td>0</td><td>0</td></tr>
-    <tr><td>DIWM/DIY completed</td><td>0</td><td>0</td><td>0</td></tr>
-    <tr><td>Revenue from DIWM/DIY post-msg</td><td>$0</td><td>$0</td><td>$0</td></tr>
-  </table>
 </div>
 
 <!-- ── WIP CLEARING ── -->
-<h2>4. WIP Clearing & Expert Time Protection</h2>
-<p class="section-intro">The primary operational goal: how effectively does each path remove WIP from expert queues?</p>
-
-<div class="grid-2">
-  <div class="card">
-    <h3>Current Engagement State</h3>
-    <div class="chart-wrap"><canvas id="chartWipStatus"></canvas></div>
+<h2>5. WIP Clearing — Off-Queue Rates</h2>
+<div class="grid-4">
+  <div class="metric-box" style="border-color:var(--c-holdout)">
+    <div class="val" style="color:var(--c-holdout)">88.1%</div>
+    <div class="lbl">Full Holdout<br>3,477 off queue</div>
   </div>
-  <div class="card">
-    <h3>Engagement State Breakdown</h3>
-    <table>
-      <tr><th>State</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
-      <tr><td>Still WIP w/ Expert</td><td>3,714 (94.1%)</td><td>16,366 (92.2%)</td><td>16,774 (94.5%)</td></tr>
-      <tr><td>Completed (detach/cancel)</td><td>106 (2.7%)</td><td>943 (5.3%)</td><td>486 (2.7%)</td></tr>
-      <tr><td>Completed (FS filed)</td><td>21 (0.5%)</td><td>87 (0.5%)</td><td>96 (0.5%)</td></tr>
-      <tr><td>WIP — No Expert</td><td>103 (2.6%)</td><td>348 (2.0%)</td><td>390 (2.2%)</td></tr>
-      <tr><td>No FS Engagement</td><td>2 (0.1%)</td><td>9 (0.1%)</td><td>12 (0.1%)</td></tr>
-    </table>
-    <p class="text-sm" style="margin-top:12px;color:var(--c-muted)">"Completed (detach/cancel)" = engagement status COMPLETED but no filing — this represents system-initiated closures (detach attempts, customer self-detach, etc.). For the detach cohort, 377 were partially detached on 3/20. The 3/24 re-run results are not fully reflected yet.</p>
+  <div class="metric-box" style="border-color:var(--c-holdout-li)">
+    <div class="val" style="color:var(--c-holdout-li)">87.9%</div>
+    <div class="lbl">Low-Intent Holdout<br>1,408 off queue</div>
+  </div>
+  <div class="metric-box" style="border-color:var(--c-detach)">
+    <div class="val" style="color:var(--c-detach)">92.8%</div>
+    <div class="lbl">Detach — ITC 105.3<br>p < 0.001 ***</div>
+  </div>
+  <div class="metric-box" style="border-color:var(--c-unassign)">
+    <div class="val" style="color:var(--c-unassign)">87.7%</div>
+    <div class="lbl">Unassign — ITC 99.8<br>p = 0.846 (n.s.)</div>
   </div>
 </div>
-
-<div class="card">
-  <h3>Net WIP Cleared from Expert Queues</h3>
-  <div class="grid-3">
-    <div class="metric-box">
-      <div class="val" style="color:var(--c-holdout)">5.9%</div>
-      <div class="lbl">Holdout<br>232 of 3,946 off queue</div>
-    </div>
-    <div class="metric-box">
-      <div class="val" style="color:var(--c-detach)">7.8%</div>
-      <div class="lbl">Detach<br>1,387 of 17,753 off queue</div>
-    </div>
-    <div class="metric-box">
-      <div class="val" style="color:var(--c-unassign)">5.5%</div>
-      <div class="lbl">Unassign<br>984 of 17,758 off queue</div>
-    </div>
-  </div>
-  <div class="callout-green callout" style="margin-top:16px">
-    <strong>Detach shows more WIP clearing (7.8%).</strong> However, this is driven by the partial 3/20 detach batch (377 system-closures). The full 3/24 re-run results are not yet reflected in engagement status. When the 3/24 detach fully processes, the detach cohort should show significantly higher WIP clearing — potentially all scrubbed engagements (~6K) moving off queue.
-  </div>
+<div class="callout callout-green">
+  <strong>Detach significantly outperforms on WIP clearing</strong> (92.8% vs 88.1%, ITC=105.3, p < 0.001). This is expected since detach system-closes engagements. Unassign's WIP clearing (87.7%) is statistically indistinguishable from holdout — unassign alone doesn't move engagements off queue; it only removes the expert.
 </div>
 
 <!-- ── MILESTONE DISTRIBUTION ── -->
-<h2>5. Current Milestone Distribution</h2>
+<h2>6. Milestone Distribution</h2>
 <div class="card">
-  <h3>Where Are These Engagements Now?</h3>
   <div class="chart-wrap-tall"><canvas id="chartMilestone"></canvas></div>
 </div>
 
-<!-- ── KEY INSIGHT: MESSAGE RESPONSE CURVE ── -->
-<h2>6. Message Response Velocity</h2>
-<p class="section-intro">How quickly did customers respond after receiving the message? This shows the daily rate of new FS actions (first-time post-message).</p>
+<!-- ── DIWM RE-ENGAGEMENT ── -->
+<h2>7. DIWM/DIY Re-engagement</h2>
 <div class="card">
-  <h3>Daily New FS Actions — Days After Message</h3>
-  <div class="chart-wrap-tall"><canvas id="chartDailyActions"></canvas></div>
+  <table class="stat-table">
+    <tr><th>Metric</th><th><span class="badge badge-holdout">Full</span></th><th><span class="badge badge-holdout-li">Low Int</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
+    <tr><td>DIWM/DIY ever started (same auth)</td><td>475 (12.0%)</td><td>92 (5.7%)</td><td>2,012 (11.3%)</td><td>1,978 (11.1%)</td></tr>
+    <tr><td>Started after message (post 3/10)</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>DIWM/DIY completed</td><td>105 (2.7%)</td><td>18 (1.1%)</td><td>506 (2.9%)</td><td>458 (2.6%)</td></tr>
+    <tr><td>Completed after message</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+    <tr><td>Revenue from post-msg DIWM</td><td>$0</td><td>$0</td><td>$0</td><td>$0</td></tr>
+  </table>
   <div class="callout" style="margin-top:16px">
-    <strong>Observation:</strong> The messaging produced an immediate action spike on Day 0–1, especially for the detach cohort (25 actions on day 0 vs holdout baseline of 4). Unassign also showed strong early response (20 on day 0, 28 on day 1). The response curve flattens after ~day 7, with a notable second spike around day 13–14 for detach (likely coinciding with the detach attempt on 3/20 = day 10, and processing follow-up on day 13).
+    <strong>Zero new DIWM/DIY starts post-message across all cohorts.</strong> The detach pathway has not activated any DIWM/DIY re-engagement. The ~11% "ever started" reflects prior separate DIY/DIWM usage, not a post-intervention shift. This is the strongest evidence against detach's theoretical upside.
   </div>
 </div>
 
-<!-- ── ANALYSIS ── -->
-<h2>7. Analysis & Recommendation</h2>
+<!-- ── APPOINTMENTS POST-MESSAGE ── -->
+<h2>8. Appointment Activity Post-Message</h2>
 <div class="card">
-  <h3>What the data tells us so far</h3>
-  
-  <p style="margin-bottom:16px"><strong>1. Messaging alone doesn't meaningfully lift franchise completion.</strong> All three cohorts show nearly identical completion rates (~5 per 1,000 over 15 days). The stick messages haven't materially changed customer behavior toward filing.</p>
-  
-  <p style="margin-bottom:16px"><strong>2. Messaging does drive marginal FS re-engagement.</strong> Unassign messaging shows a slight lift in FS actions (14.6/1K vs 12.7/1K holdout over 15 days). The effect is most pronounced in the first 3 days post-message. This suggests the messages do prompt some customers to take action — just not enough to reach completion.</p>
-  
-  <p style="margin-bottom:16px"><strong>3. Unassign preserves the FS path while clearing expert assignment.</strong> Post-unassign, customers continue to take FS actions (4.6/1K within 5 days). The engagement stays active — if a customer re-engages, they can get a new expert. This means unassign clears expert time without permanently closing the door.</p>
-  
-  <p style="margin-bottom:16px"><strong>4. Detach impact is still premature to judge.</strong> The 3/24 re-run just happened. Only 5 franchise completions post-action vs unassign's 41 — but unassign has had 5x more days. The critical unknown: will detached customers re-engage via DIWM/DIY? Zero have so far, but it's only been 1 day.</p>
-  
-  <p style="margin-bottom:16px"><strong>5. No DIWM/DIY re-engagement detected in any cohort.</strong> This is the biggest signal for the detach vs. unassign decision. If detach is supposed to redirect customers to DIWM/DIY, there's zero evidence of that pathway activating yet.</p>
+  <h3>Daily First Appointments Handled (per 1,000)</h3>
+  <div class="chart-wrap-tall"><canvas id="chartDailyAppts"></canvas></div>
+</div>
 
-  <h3 style="margin-top:28px">Directional Recommendation</h3>
+<!-- ── INTERPRETATION ── -->
+<h2>9. Statistical Interpretation & Recommendation</h2>
+<div class="card">
+  <h3>What the statistics tell us</h3>
+  
+  <p style="margin-bottom:16px"><strong>1. Against the full holdout, treatments show no significant lift in FS filing.</strong> Both detach (ITC=105.1, p=0.92) and unassign (ITC=110.1, p=0.76) produce nearly identical FS filing rates to the holdout. The messaging and actions did not meaningfully increase filing.</p>
+  
+  <p style="margin-bottom:16px"><strong>2. Against the low-intent holdout, a real signal emerges.</strong> The low-intent holdout had <strong>zero FS filings</strong>, while both treatments produced ~0.6% filing (p < 0.001). This suggests the messaging + intervention activated some behavior in what would have been fully dormant customers. However, the absolute lift is ~0.6%, so the practical impact is small.</p>
+  
+  <p style="margin-bottom:16px"><strong>3. Detach is the only lever that significantly clears WIP.</strong> Detach's 92.8% off-queue rate is significantly higher than holdout (88.1%, p < 0.001), driven by system-closing 39.5% of engagements. Unassign's off-queue rate (87.7%) is statistically no different from holdout.</p>
+  
+  <p style="margin-bottom:16px"><strong>4. Unassign preserves optionality without clearing WIP.</strong> Unassign shows 50 post-action filings in 7 days (2.8/1K) vs detach's 18 in 1 day (1.0/1K). On a per-day basis, these are comparable. But unassigned engagements remain "WIP" with expert removed — this doesn't actually free up the engagement slot.</p>
+  
+  <p style="margin-bottom:16px"><strong>5. Zero DIWM/DIY re-engagement across all cohorts.</strong> Detach's theoretical advantage — redirecting customers to self-file — has produced zero conversions. No new DIWM/DIY starts post-message in any group.</p>
+
+  <h3 style="margin-top:28px">Net Assessment</h3>
   <div class="callout-green callout">
-    <p><strong>Lean into Unassign for the rest of the season.</strong></p>
-    <p style="margin-top:8px">The data supports unassign as the lower-risk path that achieves the operational goal (clearing WIP / protecting expert time) without permanently losing the customer from FS. Key reasons:</p>
-    <ul style="margin-top:8px;padding-left:20px">
-      <li><strong>FS path stays open:</strong> Unassigned customers continue taking FS actions (4.6/1K within 5 days post-action). Some will complete on their own.</li>
-      <li><strong>No evidence of DIWM/DIY re-engagement:</strong> Detach's theoretical upside (redirecting to DIWM) hasn't materialized. Zero post-message DIWM starts across all cohorts.</li>
-      <li><strong>Operationally simpler:</strong> Unassign executed cleanly on 3/19. Detach required 2 attempts and hit technical issues (duplicates, circuit breaker).</li>
-      <li><strong>Reversible:</strong> Unassigned customers can be re-assigned if they re-engage. Detached customers need to start over.</li>
-    </ul>
-    <p style="margin-top:12px"><strong>However:</strong> Re-read in 5–7 days (by 3/30) to check if detached customers show any DIWM/DIY re-engagement. If they do, the calculus changes — detach could unlock incremental revenue from DIWM completions that wouldn't happen under unassign.</p>
+    <p><strong>For WIP clearing: Detach wins.</strong> It's the only action that significantly moves engagements off expert queues (ITC=105.3, p < 0.001). If the primary objective is protecting expert capacity, detach is the statistically validated lever.</p>
+    <p style="margin-top:12px"><strong>For customer outcomes: No significant difference.</strong> Neither treatment meaningfully improves FS filing or franchise completion vs holdout. The low-intent holdout comparison shows the messaging activated ~0.6% of dormant customers, but both treatments perform identically on this metric.</p>
+    <p style="margin-top:12px"><strong>Detach's DIWM upside remains unproven.</strong> Zero post-message DIWM starts is a strong null signal. If DIWM re-engagement was the justification for detach over unassign, the data doesn't support it.</p>
+    <p style="margin-top:12px"><strong>Recommendation: Detach for immediate WIP clearing if that's the operational priority. Re-read at day 7 post-detach (by 3/31) to check for DIWM emergence. If none, detach's only advantage over unassign is the system-closure, with no customer outcome benefit.</strong></p>
   </div>
 
-  <h3 style="margin-top:28px">What to watch in the next read</h3>
-  <table>
-    <tr><th>Metric</th><th>Why it matters</th><th>Current signal</th></tr>
-    <tr><td>DIWM/DIY starts post-detach</td><td>The core value prop of detach over unassign</td><td>0 — too early</td></tr>
-    <tr><td>Franchise completion rate at day 7 post-action</td><td>Apples-to-apples comparison once detach matures</td><td>Unassign: 2.3/1K | Detach: 0.3/1K (1 day only)</td></tr>
-    <tr><td>Revenue per customer (DIWM completed)</td><td>Detach upside = DIWM revenue captured</td><td>$0 both cohorts</td></tr>
-    <tr><td>FS re-engagement post-unassign</td><td>Does unassign eventually lead to filing?</td><td>4.6/1K within 5 days — promising</td></tr>
+  <h3 style="margin-top:28px">All Statistical Tests Summary</h3>
+  <table class="stat-table" style="font-size:11px">
+    <tr>
+      <th>Metric</th><th>Treatment</th><th>Control</th><th>Treat Rate</th><th>Ctrl Rate</th><th>ITC</th><th>p-value</th><th>Test</th><th>Sig?</th>
+    </tr>
+    <tr><td>FS Filing</td><td>Detach</td><td>Full</td><td>0.586%</td><td>0.558%</td><td>105.1</td><td>0.9237</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr><td>FS Filing</td><td>Unassign</td><td>Full</td><td>0.614%</td><td>0.558%</td><td>110.1</td><td>0.7647</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr style="background:#fef2f2"><td>FS Filing</td><td>Detach</td><td>Low Int</td><td>0.586%</td><td>0.000%</td><td>∞</td><td>0.0002</td><td>Fisher</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>FS Filing</td><td>Unassign</td><td>Low Int</td><td>0.614%</td><td>0.000%</td><td>∞</td><td>0.0002</td><td>Fisher</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Detach</td><td>Full</td><td>92.8%</td><td>88.1%</td><td>105.3</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr><td>WIP Clearing</td><td>Unassign</td><td>Full</td><td>87.7%</td><td>88.1%</td><td>99.5</td><td>0.4782</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Detach</td><td>Low Int</td><td>92.8%</td><td>87.9%</td><td>105.5</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr><td>WIP Clearing</td><td>Unassign</td><td>Low Int</td><td>87.7%</td><td>87.9%</td><td>99.8</td><td>0.8463</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Detach</td><td>Full</td><td>39.5%</td><td>2.81%</td><td>1404</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr><td>Comp Not Filed</td><td>Unassign</td><td>Full</td><td>2.91%</td><td>2.81%</td><td>103.5</td><td>0.7787</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Detach</td><td>Low Int</td><td>39.5%</td><td>0.44%</td><td>9037</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Unassign</td><td>Low Int</td><td>2.91%</td><td>0.44%</td><td>666</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr><td>Appt Post-Msg</td><td>Detach</td><td>Full</td><td>0.845%</td><td>0.836%</td><td>101</td><td>1.000</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr><td>Appt Post-Msg</td><td>Unassign</td><td>Full</td><td>0.946%</td><td>0.836%</td><td>113</td><td>0.576</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Detach</td><td>Low Int</td><td>0.845%</td><td>0.000%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Unassign</td><td>Low Int</td><td>0.946%</td><td>0.000%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
   </table>
 </div>
 
 </div><!-- /container -->
 
 <script>
-const COLORS = { holdout: '#6366f1', detach: '#ef4444', unassign: '#22c55e' };
+const COLORS = { holdout: '#6366f1', holdoutLI: '#a855f7', detach: '#ef4444', unassign: '#22c55e' };
+const SIZES = { Holdout_Full: 3946, Holdout_LowIntent: 1602, Detach: 17753, Unassign: 17758 };
 
-// ── Cumulative completion curve ──
-const compData = {
-  holdout: {2:1,3:1,4:2,5:1,6:1,7:6,8:3,9:1,10:2,13:1},
-  detach: {0:4,1:2,2:2,3:3,4:6,5:7,6:6,7:9,8:9,9:3,10:8,11:10,12:6,13:7,14:5},
-  unassign: {0:2,1:3,2:3,3:4,4:6,5:11,6:4,7:12,8:8,9:7,10:8,11:10,12:5,13:6,14:5}
+// ── Cumulative completion curves ──
+const compDaily = {
+  Detach:       {0:4,1:2,2:2,3:3,4:6,5:7,6:7,7:9,8:9,9:3,10:8,11:10,12:6,13:8,14:8,15:10},
+  Holdout_Full: {2:1,3:1,4:2,5:1,6:1,7:6,8:3,9:1,10:2,13:1,15:1},
+  Unassign:     {0:2,1:3,2:4,3:5,4:6,5:11,6:4,7:13,8:9,9:8,10:8,11:10,12:5,13:6,14:5,15:8}
 };
-const SIZES = { holdout: 3946, detach: 17753, unassign: 17758 };
 function buildCumPer1K(dailyObj, size) {
   let cum = 0; const pts = [];
   for (let d = 0; d <= 15; d++) { cum += (dailyObj[d] || 0); pts.push(+(cum * 1000 / size).toFixed(2)); }
   return pts;
 }
-const days15 = Array.from({length:16}, (_,i) => i);
+const days16 = Array.from({length:16}, (_,i) => i);
 new Chart(document.getElementById('chartCompCurve'), {
   type: 'line',
   data: {
-    labels: days15,
+    labels: days16,
     datasets: [
-      { label: 'Holdout', data: buildCumPer1K(compData.holdout, SIZES.holdout), borderColor: COLORS.holdout, backgroundColor: COLORS.holdout+'22', fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Detach', data: buildCumPer1K(compData.detach, SIZES.detach), borderColor: COLORS.detach, backgroundColor: COLORS.detach+'22', fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Unassign', data: buildCumPer1K(compData.unassign, SIZES.unassign), borderColor: COLORS.unassign, backgroundColor: COLORS.unassign+'22', fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Holdout Full', data: buildCumPer1K(compDaily.Holdout_Full, SIZES.Holdout_Full), borderColor: COLORS.holdout, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Holdout Low-Intent', data: days16.map(() => 0), borderColor: COLORS.holdoutLI, borderDash: [5,5], fill: false, tension: 0, pointRadius: 2 },
+      { label: 'Detach', data: buildCumPer1K(compDaily.Detach, SIZES.Detach), borderColor: COLORS.detach, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Unassign', data: buildCumPer1K(compDaily.Unassign, SIZES.Unassign), borderColor: COLORS.unassign, fill: false, tension: 0.3, pointRadius: 2 },
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top' },
-      annotation: {}
-    },
     scales: {
-      x: { title: { display: true, text: 'Days after message sent' }},
-      y: { title: { display: true, text: 'Cumulative completions per 1,000' }, beginAtZero: true }
+      x: { title: { display: true, text: 'Days after message sent (3/10)' }},
+      y: { title: { display: true, text: 'Cumulative FS filings per 1,000' }, beginAtZero: true }
     }
   }
 });
 
-// ── Cumulative action curve ──
-const actData = {
-  holdout: {0:4,1:7,2:4,3:3,4:6,5:6,6:3,7:3,8:1,9:3,11:1,12:1,13:4,14:4},
-  detach: {0:25,1:9,2:13,3:20,4:15,5:14,6:19,7:21,8:19,9:7,10:19,11:13,12:11,13:26,14:6},
-  unassign: {0:20,1:28,2:32,3:15,4:18,5:13,6:22,7:12,8:18,9:14,10:10,11:16,12:11,13:12,14:18}
+// ── Engagement State Chart ──
+const stateLabels = ['WIP w/ Expert', 'WIP No Expert', 'Completed Filed', 'Completed Not Filed'];
+const stateData = {
+  Holdout_Full:     [11.89, 2.41, 0.56, 2.81],
+  Holdout_LowIntent:[12.11, 1.19, 0.00, 0.44],
+  Detach:           [7.23, 1.37, 0.56, 39.49],
+  Unassign:         [12.31, 2.04, 0.60, 2.91]
 };
-new Chart(document.getElementById('chartActionCurve'), {
-  type: 'line',
-  data: {
-    labels: days15,
-    datasets: [
-      { label: 'Holdout', data: buildCumPer1K(actData.holdout, SIZES.holdout), borderColor: COLORS.holdout, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Detach', data: buildCumPer1K(actData.detach, SIZES.detach), borderColor: COLORS.detach, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Unassign', data: buildCumPer1K(actData.unassign, SIZES.unassign), borderColor: COLORS.unassign, fill: false, tension: 0.3, pointRadius: 2 },
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    scales: {
-      x: { title: { display: true, text: 'Days after message sent' }},
-      y: { title: { display: true, text: 'Cumulative FS actions per 1,000' }, beginAtZero: true }
-    }
-  }
-});
-
-// ── Daily actions bar chart ──
-new Chart(document.getElementById('chartDailyActions'), {
+new Chart(document.getElementById('chartState'), {
   type: 'bar',
   data: {
-    labels: days15,
+    labels: ['Holdout Full', 'Holdout LI', 'Detach', 'Unassign'],
     datasets: [
-      { label: 'Holdout', data: days15.map(d => +((actData.holdout[d]||0)*1000/SIZES.holdout).toFixed(2)), backgroundColor: COLORS.holdout+'99' },
-      { label: 'Detach', data: days15.map(d => +((actData.detach[d]||0)*1000/SIZES.detach).toFixed(2)), backgroundColor: COLORS.detach+'99' },
-      { label: 'Unassign', data: days15.map(d => +((actData.unassign[d]||0)*1000/SIZES.unassign).toFixed(2)), backgroundColor: COLORS.unassign+'99' },
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    scales: {
-      x: { title: { display: true, text: 'Days after message sent' }},
-      y: { title: { display: true, text: 'New actions per 1,000 (that day)' }, beginAtZero: true }
-    }
-  }
-});
-
-// ── WIP Status stacked bar ──
-new Chart(document.getElementById('chartWipStatus'), {
-  type: 'bar',
-  data: {
-    labels: ['Holdout', 'Detach', 'Unassign'],
-    datasets: [
-      { label: 'WIP w/ Expert', data: [94.1, 92.2, 94.5], backgroundColor: '#94a3b8' },
-      { label: 'Completed (detach/cancel)', data: [2.7, 5.3, 2.7], backgroundColor: '#fb923c' },
-      { label: 'FS Filed', data: [0.5, 0.5, 0.5], backgroundColor: '#4ade80' },
-      { label: 'WIP No Expert', data: [2.6, 2.0, 2.2], backgroundColor: '#fbbf24' },
+      { label: 'WIP w/ Expert', data: [stateData.Holdout_Full[0], stateData.Holdout_LowIntent[0], stateData.Detach[0], stateData.Unassign[0]], backgroundColor: '#94a3b8' },
+      { label: 'WIP No Expert', data: [stateData.Holdout_Full[1], stateData.Holdout_LowIntent[1], stateData.Detach[1], stateData.Unassign[1]], backgroundColor: '#fbbf24' },
+      { label: 'Completed Filed', data: [stateData.Holdout_Full[2], stateData.Holdout_LowIntent[2], stateData.Detach[2], stateData.Unassign[2]], backgroundColor: '#4ade80' },
+      { label: 'Completed Not Filed', data: [stateData.Holdout_Full[3], stateData.Holdout_LowIntent[3], stateData.Detach[3], stateData.Unassign[3]], backgroundColor: '#fb923c' }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     indexAxis: 'y',
-    scales: { x: { stacked: true, max: 100, title: { display: true, text: '% of cohort' }}, y: { stacked: true }},
+    scales: { x: { stacked: true, title: { display: true, text: '% of cohort' }}, y: { stacked: true }},
     plugins: { legend: { position: 'bottom' }}
   }
 });
 
 // ── Milestone distribution ──
-const milestones = ['Welcome Call', 'Gathering Info', 'Tax Prep Start', 'Client Review', 'Filing', 'Post File'];
-const msData = {
-  holdout: { 'Welcome Call': 82.0, 'Gathering Info': 14.5, 'Tax Prep Start': 0.3, 'Client Review': 0.2, 'Filing': 0.1, 'Post File': 0.5 },
-  detach: { 'Welcome Call': 82.1, 'Gathering Info': 14.3, 'Tax Prep Start': 0.4, 'Client Review': 0.1, 'Filing': 0.1, 'Post File': 0.5 },
-  unassign: { 'Welcome Call': 83.9, 'Gathering Info': 13.8, 'Tax Prep Start': 0.4, 'Client Review': 0.1, 'Filing': 0.0, 'Post File': 0.5 }
+const milestones = ['Welcome Call', 'Gathering Info', 'Engagement Created', 'Tax Prep Start', 'Client Review', 'Evaluation', 'Filing', 'Post File'];
+const msRaw = {
+  Holdout_Full: {3322:['Welcome Call',3946], 572:['Gathering Info',3946], 3:['Engagement Created',3946], 15:['Tax Prep Start',3946], 7:['Client Review',3946], 1:['Evaluation',3946], 4:['Filing',3946], 22:['Post File',3946]},
+  Holdout_LowIntent: {1448:['Welcome Call',1602], 153:['Gathering Info',1602], 1:['Engagement Created',1602]},
+  Detach: {14838:['Welcome Call',17753], 2680:['Gathering Info',17753], 18:['Engagement Created',17753], 73:['Tax Prep Start',17753], 21:['Client Review',17753], 5:['Evaluation',17753], 14:['Filing',17753], 104:['Post File',17753]},
+  Unassign: {14905:['Welcome Call',17758], 2589:['Gathering Info',17758], 27:['Engagement Created',17758], 78:['Tax Prep Start',17758], 28:['Client Review',17758], 5:['Evaluation',17758], 16:['Filing',17758], 109:['Post File',17758]}
 };
+const msData = {};
+['Holdout_Full','Holdout_LowIntent','Detach','Unassign'].forEach(c => {
+  msData[c] = {};
+  milestones.forEach(m => { msData[c][m] = 0; });
+});
+// Parse milestone data from q6 results
+const msCounts = {
+  Holdout_Full: {'Welcome Call':3322,'Gathering Info':572,'Engagement Created':3,'Tax Prep Start':15,'Client Review':7,'Evaluation':1,'Filing':4,'Post File':22},
+  Holdout_LowIntent: {'Welcome Call':1448,'Gathering Info':153,'Engagement Created':1},
+  Detach: {'Welcome Call':14838,'Gathering Info':2680,'Engagement Created':18,'Tax Prep Start':73,'Client Review':21,'Evaluation':5,'Filing':14,'Post File':104},
+  Unassign: {'Welcome Call':14905,'Gathering Info':2589,'Engagement Created':27,'Tax Prep Start':78,'Client Review':28,'Evaluation':5,'Filing':16,'Post File':109}
+};
+['Holdout_Full','Holdout_LowIntent','Detach','Unassign'].forEach(c => {
+  milestones.forEach(m => { msData[c][m] = ((msCounts[c]||{})[m]||0) / SIZES[c] * 100; });
+});
 new Chart(document.getElementById('chartMilestone'), {
   type: 'bar',
   data: {
     labels: milestones,
     datasets: [
-      { label: 'Holdout', data: milestones.map(m => msData.holdout[m]), backgroundColor: COLORS.holdout+'bb' },
-      { label: 'Detach', data: milestones.map(m => msData.detach[m]), backgroundColor: COLORS.detach+'bb' },
-      { label: 'Unassign', data: milestones.map(m => msData.unassign[m]), backgroundColor: COLORS.unassign+'bb' },
+      { label: 'Holdout Full', data: milestones.map(m => msData.Holdout_Full[m].toFixed(1)), backgroundColor: COLORS.holdout+'bb' },
+      { label: 'Holdout LI', data: milestones.map(m => msData.Holdout_LowIntent[m].toFixed(1)), backgroundColor: COLORS.holdoutLI+'bb' },
+      { label: 'Detach', data: milestones.map(m => msData.Detach[m].toFixed(1)), backgroundColor: COLORS.detach+'bb' },
+      { label: 'Unassign', data: milestones.map(m => msData.Unassign[m].toFixed(1)), backgroundColor: COLORS.unassign+'bb' }
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: { y: { title: { display: true, text: '% of cohort' }, beginAtZero: true }},
     plugins: { legend: { position: 'top' }}
+  }
+});
+
+// ── Daily appointments chart ──
+const apptDaily = {
+  Detach:       {0:11,1:7,2:7,3:10,4:4,5:10,6:8,7:12,8:7,9:11,10:15,11:11,12:15,13:15,14:7},
+  Holdout_Full: {0:2,2:1,3:2,4:3,5:1,6:6,7:7,8:2,9:2,11:1,12:1,13:3,14:2},
+  Unassign:     {0:10,1:5,2:13,3:12,4:9,5:14,6:14,7:12,8:11,9:12,10:9,11:14,12:6,13:16,14:11}
+};
+new Chart(document.getElementById('chartDailyAppts'), {
+  type: 'bar',
+  data: {
+    labels: Array.from({length:15}, (_,i) => i),
+    datasets: [
+      { label: 'Holdout Full', data: Array.from({length:15}, (_,i) => +((apptDaily.Holdout_Full[i]||0)*1000/SIZES.Holdout_Full).toFixed(2)), backgroundColor: COLORS.holdout+'99' },
+      { label: 'Detach', data: Array.from({length:15}, (_,i) => +((apptDaily.Detach[i]||0)*1000/SIZES.Detach).toFixed(2)), backgroundColor: COLORS.detach+'99' },
+      { label: 'Unassign', data: Array.from({length:15}, (_,i) => +((apptDaily.Unassign[i]||0)*1000/SIZES.Unassign).toFixed(2)), backgroundColor: COLORS.unassign+'99' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    scales: {
+      x: { title: { display: true, text: 'Days after message sent' }},
+      y: { title: { display: true, text: 'First appts handled per 1,000' }, beginAtZero: true }
+    }
   }
 });
 </script>
