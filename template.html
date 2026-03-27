@@ -151,7 +151,7 @@
 
 <!-- ── FRANCHISE COMPLETION ── -->
 <h2>1. Franchise Completion (Auth-Level)</h2>
-<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">Completion measured at auth_id level using cgan_ustax_ws.core — one auth can have multiple engagements across products. FS completion = filed via Full Service. Franchise completion = completed any TurboTax product.</p>
+<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">Completion measured at auth_id level using product_analytics_master (PAM) — one auth can have multiple engagements across products. FS completion = filed via Full Service. Franchise completion = completed any TurboTax product.</p>
 
 <div class="card">
 <h3>vs Full Holdout (n={{ fc_ctrl_full.auths }})</h3>
@@ -351,38 +351,14 @@
   </div>
 </div>
 
-<!-- ── WIP CLEARING ── -->
-<h2>6. WIP Clearing — Off-Queue Rates</h2>
-<div class="grid-4">
-  <div class="metric-box" style="border-color:var(--c-holdout)">
-    <div class="val" style="color:var(--c-holdout)">{{ wip.Holdout_Full.rate_fmt }}</div>
-    <div class="lbl">Full Holdout<br>{{ wip.Holdout_Full.off_queue | commaformat }} off queue</div>
-  </div>
-  <div class="metric-box" style="border-color:var(--c-holdout-li)">
-    <div class="val" style="color:var(--c-holdout-li)">{{ wip.Holdout_LowIntent.rate_fmt }}</div>
-    <div class="lbl">Low-Intent Holdout<br>{{ wip.Holdout_LowIntent.off_queue | commaformat }} off queue</div>
-  </div>
-  <div class="metric-box" style="border-color:var(--c-detach)">
-    <div class="val" style="color:var(--c-detach)">{{ wip.Detach_Acted.rate_fmt }}</div>
-    <div class="lbl">Detach (Acted) — ITC {{ wip.Detach_Acted.itc }}<br>{{ wip.Detach_Acted.pval_label }}</div>
-  </div>
-  <div class="metric-box" style="border-color:var(--c-unassign)">
-    <div class="val" style="color:var(--c-unassign)">{{ wip.Unassign_Acted.rate_fmt }}</div>
-    <div class="lbl">Unassign (Acted) — ITC {{ wip.Unassign_Acted.itc }}<br>{{ wip.Unassign_Acted.pval_label }}</div>
-  </div>
-</div>
-<div class="callout callout-green">
-  {{ wip_narrative }}
-</div>
-
 <!-- ── MILESTONE DISTRIBUTION ── -->
-<h2>7. Milestone Distribution</h2>
+<h2>6. Milestone Distribution</h2>
 <div class="card">
   <div class="chart-wrap-tall"><canvas id="chartMilestone"></canvas></div>
 </div>
 
 <!-- ── DIWM RE-ENGAGEMENT ── -->
-<h2>8. DIWM/DIY Re-engagement</h2>
+<h2>7. DIWM/DIY Re-engagement</h2>
 <div class="card">
   <table class="stat-table">
     <tr>
@@ -404,14 +380,14 @@
 </div>
 
 <!-- ── APPOINTMENTS POST-MESSAGE ── -->
-<h2>9. Appointment Activity Post-Message</h2>
+<h2>8. Appointment Activity Post-Message</h2>
 <div class="card">
   <h3>Daily First Appointments Handled (per 1,000)</h3>
   <div class="chart-wrap-tall"><canvas id="chartDailyAppts"></canvas></div>
 </div>
 
 <!-- ── INTERPRETATION ── -->
-<h2>10. Interpretation & Recommendation</h2>
+<h2>9. Interpretation & Recommendation</h2>
 <div class="card">
   <h3>Net Assessment</h3>
   <div class="callout-green callout">
@@ -481,8 +457,7 @@ new Chart(document.getElementById('chartState'), {
     datasets: [
       { label: 'WIP w/ Expert', data: stateCohorts.map(c => (stateData[c]||[0])[0]), backgroundColor: '#94a3b8' },
       { label: 'WIP No Expert', data: stateCohorts.map(c => (stateData[c]||[0,0])[1]), backgroundColor: '#fbbf24' },
-      { label: 'Completed Filed', data: stateCohorts.map(c => (stateData[c]||[0,0,0])[2]), backgroundColor: '#4ade80' },
-      { label: 'Completed Not Filed', data: stateCohorts.map(c => (stateData[c]||[0,0,0,0])[3]), backgroundColor: '#fb923c' }
+      { label: 'Completed Filed', data: stateCohorts.map(c => (stateData[c]||[0,0,0])[2]), backgroundColor: '#4ade80' }
     ]
   },
   options: {

@@ -34,12 +34,11 @@ ALL_COHORTS = [
 ]
 PRIMARY_COHORTS = ["Holdout_Full", "Holdout_LowIntent", "Detach_Acted", "Unassign_Acted"]
 
-STATE_ORDER = ["WIP_Expert", "WIP_No_Expert", "Completed_Filed", "Completed_Not_Filed"]
+STATE_ORDER = ["WIP_Expert", "WIP_No_Expert", "Completed_Filed"]
 STATE_LABELS = {
     "WIP_Expert": "WIP w/ Expert",
     "WIP_No_Expert": "WIP No Expert",
     "Completed_Filed": "Completed — Filed",
-    "Completed_Not_Filed": "Completed — Not Filed",
 }
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(message)s", datefmt="%H:%M:%S")
@@ -232,8 +231,6 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
         expert = int(row.get("expert_assigned_flag", 0)) == 1
         if status == "COMPLETED" and filed:
             return "Completed_Filed"
-        if status == "COMPLETED" and not filed:
-            return "Completed_Not_Filed"
         if expert:
             return "WIP_Expert"
         return "WIP_No_Expert"
@@ -275,48 +272,6 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
             row_data[key] = f"{cnt:,} ({pct})"
         state_rows.append(row_data)
     ctx["state_rows"] = state_rows
-
-    # ── WIP clearing (off-queue) ──────────────────────────────────────────
-    wip = {}
-    for c in ALL_COHORTS:
-        total = sizes.get(c, 0)
-        on_q = states_counts[c].get("WIP_Expert", 0) + states_counts[c].get("WIP_No_Expert", 0)
-        off_q = max(total - on_q, 0)
-        rate = off_q / total if total else 0
-        wip[c] = {"total": total, "off_queue": off_q, "rate": rate, "rate_fmt": fmt_pct(rate)}
-
-    ctrl_full = wip.get("Holdout_Full", {"off_queue": 0, "total": 1, "rate": 0})
-    for treat in ["Detach_Acted", "Detach_MsgOnly", "Unassign_Acted", "Unassign_MsgOnly"]:
-        t = wip.get(treat, {"off_queue": 0, "total": 1, "rate": 0})
-        p, _, sig = stat_test(
-            t["off_queue"], t["total"] - t["off_queue"],
-            ctrl_full["off_queue"], ctrl_full["total"] - ctrl_full["off_queue"],
-        )
-        wip[treat]["itc"] = itc(t["rate"], ctrl_full["rate"])
-        wip[treat]["pval_label"] = f"p {fmt_p_short(p, sig)}" if sig else f"p = {p:.3f} (n.s.)"
-        wip[treat]["sig"] = sig
-    ctx["wip"] = wip
-
-    da_wip = wip.get("Detach_Acted", {"rate_fmt": "N/A"})
-    ua_wip = wip.get("Unassign_Acted", {"rate_fmt": "N/A"})
-    full_wip = wip.get("Holdout_Full", {"rate_fmt": "N/A"})
-    da_sig = wip.get("Detach_Acted", {}).get("sig", False)
-    ua_sig = wip.get("Unassign_Acted", {}).get("sig", False)
-
-    if da_sig:
-        ctx["wip_narrative"] = (
-            f"<strong>Detach (acted) significantly outperforms on WIP clearing</strong> "
-            f"({da_wip['rate_fmt']} vs {full_wip['rate_fmt']}, ITC={da_wip.get('itc','N/A')}, {da_wip.get('pval_label','')}). "
-            f"This is expected since detach system-closes engagements. "
-            f"Unassign (acted) WIP clearing ({ua_wip['rate_fmt']}) is "
-            f"{'significantly different from' if ua_sig else 'statistically indistinguishable from'} holdout "
-            f"— unassign alone doesn't move engagements off queue."
-        )
-    else:
-        ctx["wip_narrative"] = (
-            f"Detach (acted) WIP clearing ({da_wip['rate_fmt']}) and Unassign (acted) ({ua_wip['rate_fmt']}) "
-            f"compared to holdout ({full_wip['rate_fmt']})."
-        )
 
     # ── FS filings (daily) ────────────────────────────────────────────────
     filing_totals = defaultdict(int)
@@ -382,7 +337,7 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
     ctx["windows_full"] = build_window_rows("Holdout_Full", sizes.get("Holdout_Full", 1))
     ctx["windows_li"] = build_window_rows("Holdout_LowIntent", sizes.get("Holdout_LowIntent", 1))
 
-    # ── Franchise completion (auth-level, from core) ──────────────────────
+    # ── Franchise completion (auth-level, from PAM) ────────────────────────
     df_fc = data["franchise_completion"].copy()
     df_fc["cohort"] = df_fc.apply(
         lambda r: classify(
@@ -601,8 +556,6 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
         metric_defs = [
             ("FS Filing Rate", None, lambda c: filing_totals.get(c, 0)),
             ("Franchise Completion", "(auth-level, any product)", lambda c: fc_stats.get(c, {}).get("franchise_completers", 0)),
-            ("WIP Clearing (off-queue)", None, lambda c: wip.get(c, {}).get("off_queue", 0)),
-            ("Completed Not Filed", "(system closures)", lambda c: states_counts[c].get("Completed_Not_Filed", 0)),
             ("Appt Handled Post-Msg", None, lambda c: appts_total.get(c, 0)),
         ]
         for label, sublabel, count_fn in metric_defs:
@@ -642,10 +595,6 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
          {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}),
         ("Franchise Comp", "Unassign_Acted", "Full", "Holdout_Full",
          {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}),
-        ("WIP Clearing", "Detach_Acted", "Full", "Holdout_Full",
-         {c: wip.get(c, {}).get("off_queue", 0) for c in ALL_COHORTS}),
-        ("WIP Clearing", "Unassign_Acted", "Full", "Holdout_Full",
-         {c: wip.get(c, {}).get("off_queue", 0) for c in ALL_COHORTS}),
         ("Msg Only FS", "Detach_MsgOnly", "Full", "Holdout_Full", dict(filing_totals)),
         ("Msg Only FS", "Unassign_MsgOnly", "Full", "Holdout_Full", dict(filing_totals)),
     ]
@@ -677,8 +626,8 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
     hf_fr_rate = fc_stats.get("Holdout_Full", {}).get("franchise_rate", 0)
 
     ctx["overall_recommendation"] = (
-        f"Detach for immediate WIP clearing if that's the operational priority. "
-        f"Franchise completion rates should be monitored weekly as the filing season progresses."
+        f"Franchise completion rates should be monitored weekly as the filing season progresses. "
+        f"Compare acted cohorts vs holdout to assess customer outcome impact."
     )
     ctx["customer_outcome_summary"] = (
         f"Detach (acted) FS completion: {fmt_pct(da_fs_rate)}, franchise: {fmt_pct(da_fr_rate)}. "

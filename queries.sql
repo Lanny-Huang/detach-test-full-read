@@ -41,26 +41,26 @@ LEFT JOIN cgan_ustax_published.fs_engagements_master e
     AND e.tax_year = 2025;
 
 -- @query: franchise_completion
--- Auth-level franchise completion: FS completion + any-product completion
--- Joined to cgan_ustax_ws.core on auth_id per slt-query best practices
+-- Auth-level franchise completion using product_analytics_master (PAM) as SOT
+-- FS completion from engagement-level filing_end_ts; franchise completion from PAM ytd_completed_flag
 SELECT
     t.engagement_id,
     t.recipe,
     CASE WHEN li.engagement_id IS NOT NULL THEN 1 ELSE 0 END AS low_intent_flag,
     e.auth_id,
     CASE WHEN e.filing_end_ts IS NOT NULL THEN 1 ELSE 0 END AS fs_completed,
-    COALESCE(c.ytd_completed_flag, 0) AS franchise_completed,
-    c.ytd_start_sku_rollup,
-    c.ytd_completed_sku
+    COALESCE(p.completed_flag, 0) AS franchise_completed,
+    p.start_sku_rollup,
+    p.completed_sku
 FROM cgan_ustax_published.`3_9_detach_test_read` t
 LEFT JOIN cgan_ustax_published.lh_low_intent_holdout_ids li
     ON t.engagement_id = li.engagement_id
 LEFT JOIN cgan_ustax_published.fs_engagements_master e
     ON t.engagement_id = e.engagement_id
     AND e.tax_year = 2025
-LEFT JOIN cgan_ustax_ws.core c
-    ON CAST(e.auth_id AS BIGINT) = c.auth_id
-    AND c.tax_year = 2025;
+LEFT JOIN tax_rpt.product_analytics_master p
+    ON CAST(e.auth_id AS BIGINT) = p.auth_id
+    AND p.tax_year = 2025;
 
 -- @query: diwm
 -- DIWM/DIY re-engagement at auth level, split by pre/post 3/10 message
