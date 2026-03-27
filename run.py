@@ -1,6 +1,8 @@
 """
-Detach/Unassign Test — Daily Refresh
-Queries Databricks, computes statistical comparisons, renders the viz, and pushes to GitHub Pages.
+Detach/Unassign Test — Daily Refresh (v2: 6-cohort analytical redesign)
+Queries Databricks, classifies engagements into acted/msg-only cohorts,
+computes franchise completion + statistical comparisons, renders the viz,
+and pushes to GitHub Pages.
 """
 import json
 import os
@@ -25,7 +27,13 @@ MSG_DATE = datetime.date(2026, 3, 10)
 DETACH_DATE = datetime.date(2026, 3, 24)
 UNASSIGN_DATE = datetime.date(2026, 3, 19)
 
-COHORTS = ["Holdout_Full", "Holdout_LowIntent", "Detach", "Unassign"]
+ALL_COHORTS = [
+    "Holdout_Full", "Holdout_LowIntent",
+    "Detach_Acted", "Detach_MsgOnly",
+    "Unassign_Acted", "Unassign_MsgOnly",
+]
+PRIMARY_COHORTS = ["Holdout_Full", "Holdout_LowIntent", "Detach_Acted", "Unassign_Acted"]
+
 STATE_ORDER = ["WIP_Expert", "WIP_No_Expert", "Completed_Filed", "Completed_Not_Filed"]
 STATE_LABELS = {
     "WIP_Expert": "WIP w/ Expert",
@@ -38,25 +46,37 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(message)s", datef
 log = logging.getLogger(__name__)
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Cohort classification ─────────────────────────────────────────────────────
+
+def load_action_ids():
+    detach_ids = set(pd.read_csv(SCRIPT_DIR / "data/actual_detach.csv")["engagement_id"])
+    unassign_ids = set(pd.read_csv(SCRIPT_DIR / "data/actual_unassign.csv")["engagement_id"])
+    log.info(f"Loaded action IDs: {len(detach_ids)} detach, {len(unassign_ids)} unassign")
+    return detach_ids, unassign_ids
+
+
+def classify(engagement_id, recipe, low_intent_flag, detach_ids, unassign_ids):
+    if low_intent_flag:
+        return "Holdout_LowIntent"
+    if recipe == "Holdout":
+        return "Holdout_Full"
+    if recipe == "detach messaging":
+        return "Detach_Acted" if engagement_id in detach_ids else "Detach_MsgOnly"
+    if recipe == "unassign messaging":
+        return "Unassign_Acted" if engagement_id in unassign_ids else "Unassign_MsgOnly"
+    return "Unknown"
+
+
+# ── Formatting helpers ────────────────────────────────────────────────────────
 
 def fmt_pct(rate: float) -> str:
-    """Format rate (0-1) as percentage: 0 decimals if >=1%, 1 decimal if <1%."""
     pct = rate * 100
     if pct == 0:
-        return "0.0%"
-    return f"{pct:.0f}%" if pct >= 1 else f"{pct:.1f}%"
-
-
-def fmt_pct_raw(pct: float) -> str:
-    """Format a raw percent value (already *100)."""
-    if pct == 0:
-        return "0.0%"
+        return "0%"
     return f"{pct:.0f}%" if pct >= 1 else f"{pct:.1f}%"
 
 
 def commaformat(value):
-    """Jinja2 filter: 1234 -> '1,234'."""
     try:
         return f"{int(value):,}"
     except (ValueError, TypeError):
@@ -81,7 +101,9 @@ def itc_class(treat_rate, ctrl_rate):
 
 
 def stat_test(a_yes, a_no, b_yes, b_no):
-    """Run chi-square or Fisher's exact test. Returns (p-value, test_name, is_sig)."""
+    a_yes, a_no, b_yes, b_no = max(a_yes, 0), max(a_no, 0), max(b_yes, 0), max(b_no, 0)
+    if a_yes + a_no == 0 or b_yes + b_no == 0:
+        return 1.0, "N/A", False
     table = [[a_yes, a_no], [b_yes, b_no]]
     if min(a_yes, a_no, b_yes, b_no) < 5:
         _, p = sp_stats.fisher_exact(table)
@@ -94,14 +116,12 @@ def stat_test(a_yes, a_no, b_yes, b_no):
 
 def fmt_p(p, sig):
     if p < 0.001:
-        return "< 0.001 ***" if sig else "< 0.001"
-    star = " ***" if p < 0.05 else (" **" if p < 0.01 else "")
+        return "< 0.001 ***"
+    star = ""
     if p < 0.01:
         star = " **"
-    if p < 0.05 and p >= 0.01:
+    elif p < 0.05:
         star = " *"
-    if p < 0.001:
-        star = " ***"
     return f"{p:.3f}{star}"
 
 
@@ -109,13 +129,18 @@ def fmt_p_short(p, sig):
     if p < 0.001:
         return "< 0.001 ***"
     if sig:
-        return f"{p:.3f} {'***' if p < 0.001 else '**' if p < 0.01 else '*'}"
+        return f"{p:.3f} {'**' if p < 0.01 else '*'}"
     return f"{p:.2f}"
 
 
+def per1k(count, size):
+    if size == 0:
+        return 0
+    return round(count * 1000 / size, 1)
+
+
 def per1k_str(count, size):
-    val = round(count * 1000 / size)
-    return f"{val}/1K"
+    return f"{per1k(count, size)}/1K"
 
 
 # ── Databricks ────────────────────────────────────────────────────────────────
@@ -132,7 +157,6 @@ def get_databricks_token() -> str:
 
 
 def load_queries() -> dict[str, str]:
-    """Parse queries.sql into {name: sql} dict using '-- @query: name' markers."""
     text = (SCRIPT_DIR / "queries.sql").read_text()
     queries = {}
     current_name = None
@@ -170,12 +194,12 @@ def run_queries(token: str) -> dict[str, pd.DataFrame]:
     return results
 
 
-# ── Stats computation ─────────────────────────────────────────────────────────
+# ── Context builder ───────────────────────────────────────────────────────────
 
 def build_context(data: dict[str, pd.DataFrame]) -> dict:
-    """Build the full Jinja2 template context from query results."""
     today = datetime.date.today()
     ctx = {}
+    detach_ids, unassign_ids = load_action_ids()
 
     ctx["data_date"] = today.strftime("%-m/%-d")
     ctx["data_date_short"] = today.strftime("%-m/%-d")
@@ -183,168 +207,55 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
     ctx["days_since_detach"] = (today - DETACH_DATE).days
     ctx["days_since_unassign"] = (today - UNASSIGN_DATE).days
 
-    # ── Cohort sizes ──────────────────────────────────────────────────────────
-    df = data["cohort_sizes"]
-    sizes = {}
-    for _, row in df.iterrows():
-        cohort = row["cohort"]
-        if cohort in COHORTS:
-            sizes[cohort] = int(row["n"])
-    # Low-intent holdout is a subset: don't double-count in Holdout_Full
-    # Holdout_Full from 3_9_detach_test_read includes all holdout (recipe=Holdout)
-    # The query gives us Holdout_Full and Holdout_LowIntent separately because of the CASE
-    # But Holdout_LowIntent is carved from recipe='Holdout', so Holdout_Full count may be reduced
-    # Let's check if Holdout_Full is present
-    if "Holdout_Full" not in sizes:
-        sizes["Holdout_Full"] = 3946  # fallback
-    if "Holdout_LowIntent" not in sizes:
-        sizes["Holdout_LowIntent"] = 1602  # fallback
+    # ── Classify engagements into 6 cohorts using engagement_detail ────────
+    df_detail = data["engagement_detail"].copy()
+    df_detail["cohort"] = df_detail.apply(
+        lambda r: classify(
+            r["engagement_id"], r["recipe"],
+            int(r["low_intent_flag"]) == 1,
+            detach_ids, unassign_ids,
+        ), axis=1,
+    )
 
+    # ── Cohort sizes ──────────────────────────────────────────────────────
+    sizes = df_detail.groupby("cohort")["engagement_id"].nunique().to_dict()
+    for c in ALL_COHORTS:
+        sizes.setdefault(c, 0)
     ctx["sizes"] = sizes
-    ctx["sizes_json"] = json.dumps({k: sizes.get(k, 0) for k in COHORTS})
+    ctx["sizes_json"] = json.dumps({c: sizes.get(c, 0) for c in ALL_COHORTS})
+    log.info(f"Cohort sizes: {sizes}")
 
-    # ── FS filings (daily) ────────────────────────────────────────────────────
-    df = data["fs_filings"]
-    comp_daily = defaultdict(dict)
-    filing_totals = defaultdict(int)
-    for _, row in df.iterrows():
-        c = row["cohort"]
-        d = int(row["days_since_msg"])
-        n = int(row["filings"])
-        if d >= 0:
-            comp_daily[c][d] = n
-            filing_totals[c] += n
+    # ── Engagement states ─────────────────────────────────────────────────
+    def engagement_state(row):
+        status = row.get("current_engagement_status", "")
+        filed = int(row.get("fs_filed", 0)) == 1
+        expert = int(row.get("expert_assigned_flag", 0)) == 1
+        if status == "COMPLETED" and filed:
+            return "Completed_Filed"
+        if status == "COMPLETED" and not filed:
+            return "Completed_Not_Filed"
+        if expert:
+            return "WIP_Expert"
+        return "WIP_No_Expert"
 
-    max_day = 0
-    for c in comp_daily:
-        if comp_daily[c]:
-            max_day = max(max_day, max(comp_daily[c].keys()))
-    max_day = max(max_day, 15)
-    ctx["max_day"] = max_day
-    ctx["comp_daily_json"] = json.dumps({c: dict(comp_daily.get(c, {})) for c in ["Detach", "Holdout_Full", "Unassign"]})
+    df_detail["state"] = df_detail.apply(engagement_state, axis=1)
 
-    li_filing_count = filing_totals.get("Holdout_LowIntent", 0)
-    ctx["li_filing_count"] = li_filing_count
-    ctx["li_cum_per1k"] = round(li_filing_count * 1000 / sizes.get("Holdout_LowIntent", 1602), 2) if li_filing_count > 0 else 0
-
-    # ── Filing windows ────────────────────────────────────────────────────────
-    df_w = data["filing_windows"]
-    windows_data = {}
-    for _, row in df_w.iterrows():
-        c = row["cohort"]
-        windows_data[c] = {
-            "0-3": int(row["w_0_3"]),
-            "0-5": int(row["w_0_5"]),
-            "0-7": int(row["w_0_7"]),
-            "0-10": int(row["w_0_10"]),
-            "all": int(row["w_all"]),
-        }
-
-    def build_window_rows(ctrl_cohort, ctrl_size):
-        window_labels = [("0-3", "0–3 days"), ("0-5", "0–5 days"), ("0-7", "0–7 days"), ("0-10", "0–10 days"), ("all", "0–15 days")]
-        rows = []
-        for key, label in window_labels:
-            ctrl_n = windows_data.get(ctrl_cohort, {}).get(key, 0)
-            det_n = windows_data.get("Detach", {}).get(key, 0)
-            una_n = windows_data.get("Unassign", {}).get(key, 0)
-            ctrl_rate = ctrl_n / ctrl_size if ctrl_size else 0
-            det_rate = det_n / sizes["Detach"] if sizes["Detach"] else 0
-            una_rate = una_n / sizes["Unassign"] if sizes["Unassign"] else 0
-
-            det_p, _, det_sig = stat_test(det_n, sizes["Detach"] - det_n, ctrl_n, ctrl_size - ctrl_n)
-            una_p, _, una_sig = stat_test(una_n, sizes["Unassign"] - una_n, ctrl_n, ctrl_size - ctrl_n)
-
-            rows.append({
-                "label": label,
-                "ctrl_rate": fmt_pct(ctrl_rate),
-                "det_rate": fmt_pct(det_rate),
-                "det_itc": itc(det_rate, ctrl_rate),
-                "det_itc_class": itc_class(det_rate, ctrl_rate),
-                "det_pval": fmt_p_short(det_p, det_sig),
-                "det_sig_class": "sig" if det_sig else "not-sig",
-                "una_rate": fmt_pct(una_rate),
-                "una_itc": itc(una_rate, ctrl_rate),
-                "una_itc_class": itc_class(una_rate, ctrl_rate),
-                "una_pval": fmt_p_short(una_p, una_sig),
-                "una_sig_class": "sig" if una_sig else "not-sig",
-            })
-        return rows
-
-    ctx["windows_full"] = build_window_rows("Holdout_Full", sizes["Holdout_Full"])
-    ctx["windows_li"] = build_window_rows("Holdout_LowIntent", sizes["Holdout_LowIntent"])
-    any_full_sig = any(w["det_sig_class"] == "sig" or w["una_sig_class"] == "sig" for w in ctx["windows_full"])
-    any_li_sig = any(w["det_sig_class"] == "sig" or w["una_sig_class"] == "sig" for w in ctx["windows_li"])
-    ctx["windows_full_note"] = "No significant differences. Both treatments track close to full holdout." if not any_full_sig else "Some windows show significant differences."
-    ctx["windows_li_note"] = f"Low-intent holdout = {li_filing_count} filing(s). {'Significance emerges in later windows.' if any_li_sig else 'No significant differences yet.'}"
-
-    # ── Post-action filings ───────────────────────────────────────────────────
-    df_pa = data["post_action_filings"]
-    post_action = {}
-    for _, row in df_pa.iterrows():
-        c = row["cohort"]
-        post_action[c] = {
-            "w_0_1": int(row["w_0_1"]),
-            "w_0_3": int(row["w_0_3"]),
-            "w_0_5": int(row["w_0_5"]),
-            "w_0_7": int(row["w_0_7"]),
-        }
-    ctx["post_action"] = post_action
-
-    pa_windows = []
-    for key, label in [("w_0_1", "0–1 day"), ("w_0_3", "0–3 days"), ("w_0_5", "0–5 days"), ("w_0_7", "0–7 days")]:
-        det_n = post_action.get("Detach", {}).get(key, 0)
-        una_n = post_action.get("Unassign", {}).get(key, 0)
-        p, _, sig = stat_test(det_n, sizes["Detach"] - det_n, una_n, sizes["Unassign"] - una_n)
-        pa_windows.append({
-            "label": label,
-            "det_count": det_n,
-            "det_per1k": per1k_str(det_n, sizes["Detach"]),
-            "una_count": una_n,
-            "una_per1k": per1k_str(una_n, sizes["Unassign"]),
-            "pval": fmt_p_short(p, sig),
-            "sig_class": "sig" if sig else "not-sig",
-        })
-    ctx["post_action_windows"] = pa_windows
-
-    det_7 = post_action.get("Detach", {}).get("w_0_7", 0)
-    una_7 = post_action.get("Unassign", {}).get("w_0_7", 0)
-    ctx["post_action_det_per1k"] = per1k_str(det_7, sizes["Detach"])
-    ctx["post_action_una_per1k"] = per1k_str(una_7, sizes["Unassign"])
-
-    days_det = ctx["days_since_detach"]
-    days_una = ctx["days_since_unassign"]
-    det_1 = post_action.get("Detach", {}).get("w_0_1", 0)
-    una_1 = post_action.get("Unassign", {}).get("w_0_1", 0)
-    ctx["post_action_note"] = (
-        f"Detach's {det_1} filing(s) in day 1 is comparable to unassign's {una_1} at the same time mark. "
-        f"The divergence at 5+ days reflects unassign's longer observation window ({days_una} days vs {days_det}), "
-        f"not necessarily better performance."
-    )
-    ctx["post_action_comparison"] = (
-        f"On a per-day basis, these are comparable. But unassigned engagements remain 'WIP' with expert removed — "
-        f"this doesn't actually free up the engagement slot."
-    )
-
-    # ── Engagement states ─────────────────────────────────────────────────────
-    df_s = data["engagement_states"]
     states_counts = defaultdict(lambda: defaultdict(int))
-    for _, row in df_s.iterrows():
-        c = row["cohort"]
-        s = row["state"]
-        states_counts[c][s] = int(row["cnt"])
-    ctx["states"] = dict(states_counts)
+    for _, row in df_detail.iterrows():
+        states_counts[row["cohort"]][row["state"]] += 1
+    ctx["states"] = {c: dict(v) for c, v in states_counts.items()}
 
     state_pcts = {}
-    for c in COHORTS:
-        total = sizes.get(c, 1)
+    for c in ALL_COHORTS:
+        total = sizes.get(c, 1) or 1
         state_pcts[c] = {}
         for s in STATE_ORDER:
             state_pcts[c][s] = round(states_counts[c].get(s, 0) / total * 100)
     ctx["state_pcts"] = state_pcts
 
     state_data_for_chart = {}
-    for c in COHORTS:
-        total = sizes.get(c, 1)
+    for c in ALL_COHORTS:
+        total = sizes.get(c, 1) or 1
         state_data_for_chart[c] = [
             round(states_counts[c].get(s, 0) / total * 100, 1) for s in STATE_ORDER
         ]
@@ -353,69 +264,243 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
     state_rows = []
     for s in STATE_ORDER:
         row_data = {"label": STATE_LABELS[s]}
-        for c, key in [("Holdout_Full", "full_val"), ("Holdout_LowIntent", "li_val"), ("Detach", "det_val"), ("Unassign", "una_val")]:
+        for c, key in [
+            ("Holdout_Full", "hf_val"), ("Holdout_LowIntent", "hli_val"),
+            ("Detach_Acted", "da_val"), ("Detach_MsgOnly", "dmo_val"),
+            ("Unassign_Acted", "ua_val"), ("Unassign_MsgOnly", "umo_val"),
+        ]:
             cnt = states_counts[c].get(s, 0)
-            pct = fmt_pct_raw(cnt / sizes.get(c, 1) * 100)
+            total = sizes.get(c, 1) or 1
+            pct = fmt_pct(cnt / total)
             row_data[key] = f"{cnt:,} ({pct})"
         state_rows.append(row_data)
     ctx["state_rows"] = state_rows
 
-    # ── WIP clearing ──────────────────────────────────────────────────────────
-    df_wip = data["wip_clearing"]
+    # ── WIP clearing (off-queue) ──────────────────────────────────────────
     wip = {}
-    for _, row in df_wip.iterrows():
-        c = row["cohort"]
-        total = int(row["total"])
-        off_q = int(row["off_queue"])
+    for c in ALL_COHORTS:
+        total = sizes.get(c, 0)
+        on_q = states_counts[c].get("WIP_Expert", 0) + states_counts[c].get("WIP_No_Expert", 0)
+        off_q = max(total - on_q, 0)
         rate = off_q / total if total else 0
         wip[c] = {"total": total, "off_queue": off_q, "rate": rate, "rate_fmt": fmt_pct(rate)}
 
     ctrl_full = wip.get("Holdout_Full", {"off_queue": 0, "total": 1, "rate": 0})
-    ctrl_li = wip.get("Holdout_LowIntent", {"off_queue": 0, "total": 1, "rate": 0})
-
-    for treat in ["Detach", "Unassign"]:
+    for treat in ["Detach_Acted", "Detach_MsgOnly", "Unassign_Acted", "Unassign_MsgOnly"]:
         t = wip.get(treat, {"off_queue": 0, "total": 1, "rate": 0})
         p, _, sig = stat_test(
             t["off_queue"], t["total"] - t["off_queue"],
             ctrl_full["off_queue"], ctrl_full["total"] - ctrl_full["off_queue"],
         )
         wip[treat]["itc"] = itc(t["rate"], ctrl_full["rate"])
-        if sig:
-            wip[treat]["pval_label"] = f"p {fmt_p_short(p, sig)}"
-        else:
-            wip[treat]["pval_label"] = f"p = {p:.3f} (n.s.)"
+        wip[treat]["pval_label"] = f"p {fmt_p_short(p, sig)}" if sig else f"p = {p:.3f} (n.s.)"
         wip[treat]["sig"] = sig
-
     ctx["wip"] = wip
-    ctx["wip_det_sig"] = wip.get("Detach", {}).get("sig", False)
-    ctx["wip_una_sig"] = wip.get("Unassign", {}).get("sig", False)
 
-    det_wip = wip.get("Detach", {"rate_fmt": "N/A"})
-    una_wip = wip.get("Unassign", {"rate_fmt": "N/A"})
+    da_wip = wip.get("Detach_Acted", {"rate_fmt": "N/A"})
+    ua_wip = wip.get("Unassign_Acted", {"rate_fmt": "N/A"})
     full_wip = wip.get("Holdout_Full", {"rate_fmt": "N/A"})
-    if ctx["wip_det_sig"]:
+    da_sig = wip.get("Detach_Acted", {}).get("sig", False)
+    ua_sig = wip.get("Unassign_Acted", {}).get("sig", False)
+
+    if da_sig:
         ctx["wip_narrative"] = (
-            f"<strong>Detach significantly outperforms on WIP clearing</strong> "
-            f"({det_wip['rate_fmt']} vs {full_wip['rate_fmt']}, ITC={det_wip.get('itc','N/A')}, {det_wip.get('pval_label','')}). "
+            f"<strong>Detach (acted) significantly outperforms on WIP clearing</strong> "
+            f"({da_wip['rate_fmt']} vs {full_wip['rate_fmt']}, ITC={da_wip.get('itc','N/A')}, {da_wip.get('pval_label','')}). "
             f"This is expected since detach system-closes engagements. "
-            f"Unassign's WIP clearing ({una_wip['rate_fmt']}) is "
-            f"{'statistically indistinguishable from' if not ctx['wip_una_sig'] else 'significantly different from'} holdout "
-            f"— unassign alone doesn't move engagements off queue; it only removes the expert."
+            f"Unassign (acted) WIP clearing ({ua_wip['rate_fmt']}) is "
+            f"{'significantly different from' if ua_sig else 'statistically indistinguishable from'} holdout "
+            f"— unassign alone doesn't move engagements off queue."
         )
     else:
         ctx["wip_narrative"] = (
-            f"Detach WIP clearing ({det_wip['rate_fmt']}) and Unassign ({una_wip['rate_fmt']}) "
+            f"Detach (acted) WIP clearing ({da_wip['rate_fmt']}) and Unassign (acted) ({ua_wip['rate_fmt']}) "
             f"compared to holdout ({full_wip['rate_fmt']})."
         )
 
-    # ── Milestones ────────────────────────────────────────────────────────────
-    df_ms = data["milestones"]
+    # ── FS filings (daily) ────────────────────────────────────────────────
+    filing_totals = defaultdict(int)
+    comp_daily = defaultdict(lambda: defaultdict(int))
+    for _, row in df_detail.iterrows():
+        c = row["cohort"]
+        if int(row.get("fs_filed", 0)) == 1 and row.get("days_since_msg") is not None:
+            d = int(row["days_since_msg"])
+            if d >= 0:
+                comp_daily[c][d] += 1
+                filing_totals[c] += 1
+
+    max_day = 15
+    for c in comp_daily:
+        if comp_daily[c]:
+            max_day = max(max_day, max(comp_daily[c].keys()))
+    ctx["max_day"] = max_day
+    ctx["filing_totals"] = dict(filing_totals)
+
+    chart_cohorts = ["Detach_Acted", "Detach_MsgOnly", "Holdout_Full", "Unassign_Acted", "Unassign_MsgOnly"]
+    ctx["comp_daily_json"] = json.dumps({c: dict(comp_daily.get(c, {})) for c in chart_cohorts})
+
+    li_filing_count = filing_totals.get("Holdout_LowIntent", 0)
+    ctx["li_filing_count"] = li_filing_count
+    li_size = sizes.get("Holdout_LowIntent", 1) or 1
+    ctx["li_cum_per1k"] = round(li_filing_count * 1000 / li_size, 2) if li_filing_count > 0 else 0
+
+    # ── Filing windows (computed from daily data) ─────────────────────────
+    window_defs = [("0-3", 0, 3), ("0-5", 0, 5), ("0-7", 0, 7), ("0-10", 0, 10), ("all", 0, 9999)]
+    window_labels = [("0-3", "0–3 days"), ("0-5", "0–5 days"), ("0-7", "0–7 days"), ("0-10", "0–10 days"), ("all", "All post-msg")]
+
+    def window_count(cohort, lo, hi):
+        return sum(v for d, v in comp_daily.get(cohort, {}).items() if lo <= d <= hi)
+
+    def build_window_rows(ctrl_cohort, ctrl_size):
+        rows = []
+        for key, label in window_labels:
+            lo, hi = next((lo, hi) for k, lo, hi in window_defs if k == key)
+            ctrl_n = window_count(ctrl_cohort, lo, hi)
+            da_n = window_count("Detach_Acted", lo, hi)
+            ua_n = window_count("Unassign_Acted", lo, hi)
+            da_size = sizes.get("Detach_Acted", 1) or 1
+            ua_size = sizes.get("Unassign_Acted", 1) or 1
+            ctrl_rate = ctrl_n / ctrl_size if ctrl_size else 0
+            da_rate = da_n / da_size
+            ua_rate = ua_n / ua_size
+
+            da_p, _, da_sig = stat_test(da_n, da_size - da_n, ctrl_n, ctrl_size - ctrl_n)
+            ua_p, _, ua_sig = stat_test(ua_n, ua_size - ua_n, ctrl_n, ctrl_size - ctrl_n)
+
+            rows.append({
+                "label": label,
+                "ctrl_rate": fmt_pct(ctrl_rate),
+                "da_rate": fmt_pct(da_rate),
+                "da_itc": itc(da_rate, ctrl_rate), "da_itc_class": itc_class(da_rate, ctrl_rate),
+                "da_pval": fmt_p_short(da_p, da_sig), "da_sig_class": "sig" if da_sig else "not-sig",
+                "ua_rate": fmt_pct(ua_rate),
+                "ua_itc": itc(ua_rate, ctrl_rate), "ua_itc_class": itc_class(ua_rate, ctrl_rate),
+                "ua_pval": fmt_p_short(ua_p, ua_sig), "ua_sig_class": "sig" if ua_sig else "not-sig",
+            })
+        return rows
+
+    ctx["windows_full"] = build_window_rows("Holdout_Full", sizes.get("Holdout_Full", 1))
+    ctx["windows_li"] = build_window_rows("Holdout_LowIntent", sizes.get("Holdout_LowIntent", 1))
+
+    # ── Franchise completion (auth-level, from core) ──────────────────────
+    df_fc = data["franchise_completion"].copy()
+    df_fc["cohort"] = df_fc.apply(
+        lambda r: classify(
+            r["engagement_id"], r["recipe"],
+            int(r["low_intent_flag"]) == 1,
+            detach_ids, unassign_ids,
+        ), axis=1,
+    )
+
+    fc_stats = {}
+    for c in ALL_COHORTS:
+        sub = df_fc[df_fc["cohort"] == c]
+        auths = sub["auth_id"].nunique()
+        fs_comp = sub[sub["fs_completed"].astype(int) == 1]["auth_id"].nunique()
+        fran_comp = sub[sub["franchise_completed"].astype(int) == 1]["auth_id"].nunique()
+        fc_stats[c] = {
+            "auths": auths,
+            "fs_completers": fs_comp,
+            "fs_rate": fs_comp / auths if auths else 0,
+            "franchise_completers": fran_comp,
+            "franchise_rate": fran_comp / auths if auths else 0,
+        }
+    ctx["fc_stats"] = fc_stats
+
+    def build_fc_rows(ctrl_cohort):
+        ctrl = fc_stats[ctrl_cohort]
+        rows = []
+        for treat_c, label in [("Detach_Acted", "Detach (Acted)"), ("Unassign_Acted", "Unassign (Acted)")]:
+            t = fc_stats[treat_c]
+            # FS completion
+            fs_p, _, fs_sig = stat_test(
+                t["fs_completers"], t["auths"] - t["fs_completers"],
+                ctrl["fs_completers"], ctrl["auths"] - ctrl["fs_completers"],
+            )
+            # Franchise completion
+            fr_p, _, fr_sig = stat_test(
+                t["franchise_completers"], t["auths"] - t["franchise_completers"],
+                ctrl["franchise_completers"], ctrl["auths"] - ctrl["franchise_completers"],
+            )
+            rows.append({
+                "label": label,
+                "auths": f"{t['auths']:,}",
+                "fs_rate": fmt_pct(t["fs_rate"]),
+                "fs_count": f"{t['fs_completers']:,}",
+                "fs_itc": itc(t["fs_rate"], ctrl["fs_rate"]),
+                "fs_itc_class": itc_class(t["fs_rate"], ctrl["fs_rate"]),
+                "fs_pval": fmt_p(fs_p, fs_sig),
+                "fs_sig_class": "sig" if fs_sig else "not-sig",
+                "fr_rate": fmt_pct(t["franchise_rate"]),
+                "fr_count": f"{t['franchise_completers']:,}",
+                "fr_itc": itc(t["franchise_rate"], ctrl["franchise_rate"]),
+                "fr_itc_class": itc_class(t["franchise_rate"], ctrl["franchise_rate"]),
+                "fr_pval": fmt_p(fr_p, fr_sig),
+                "fr_sig_class": "sig" if fr_sig else "not-sig",
+            })
+        return rows
+
+    ctx["fc_rows_full"] = build_fc_rows("Holdout_Full")
+    ctx["fc_rows_li"] = build_fc_rows("Holdout_LowIntent")
+    ctx["fc_ctrl_full"] = {
+        "fs_rate": fmt_pct(fc_stats["Holdout_Full"]["fs_rate"]),
+        "fs_count": f"{fc_stats['Holdout_Full']['fs_completers']:,}",
+        "fr_rate": fmt_pct(fc_stats["Holdout_Full"]["franchise_rate"]),
+        "fr_count": f"{fc_stats['Holdout_Full']['franchise_completers']:,}",
+        "auths": f"{fc_stats['Holdout_Full']['auths']:,}",
+    }
+    ctx["fc_ctrl_li"] = {
+        "fs_rate": fmt_pct(fc_stats["Holdout_LowIntent"]["fs_rate"]),
+        "fs_count": f"{fc_stats['Holdout_LowIntent']['fs_completers']:,}",
+        "fr_rate": fmt_pct(fc_stats["Holdout_LowIntent"]["franchise_rate"]),
+        "fr_count": f"{fc_stats['Holdout_LowIntent']['franchise_completers']:,}",
+        "auths": f"{fc_stats['Holdout_LowIntent']['auths']:,}",
+    }
+
+    # ── Messaging impact (msg-only vs holdout) ────────────────────────────
+    msg_impact = {}
+    ctrl = fc_stats["Holdout_Full"]
+    for c, label in [("Detach_MsgOnly", "Detach Msg Only"), ("Unassign_MsgOnly", "Unassign Msg Only")]:
+        t = fc_stats[c]
+        fs_p, _, fs_sig = stat_test(
+            t["fs_completers"], t["auths"] - t["fs_completers"],
+            ctrl["fs_completers"], ctrl["auths"] - ctrl["fs_completers"],
+        )
+        fr_p, _, fr_sig = stat_test(
+            t["franchise_completers"], t["auths"] - t["franchise_completers"],
+            ctrl["franchise_completers"], ctrl["auths"] - ctrl["franchise_completers"],
+        )
+        msg_impact[c] = {
+            "label": label, "auths": f"{t['auths']:,}",
+            "fs_rate": fmt_pct(t["fs_rate"]), "fs_pval": fmt_p_short(fs_p, fs_sig),
+            "fs_sig_class": "sig" if fs_sig else "not-sig",
+            "fr_rate": fmt_pct(t["franchise_rate"]), "fr_pval": fmt_p_short(fr_p, fr_sig),
+            "fr_sig_class": "sig" if fr_sig else "not-sig",
+        }
+    ctx["msg_impact"] = msg_impact
+
+    any_msg_sig = any(
+        msg_impact[c]["fs_sig_class"] == "sig" or msg_impact[c].get("fr_sig_class") == "sig"
+        for c in msg_impact
+    )
+    if any_msg_sig:
+        ctx["msg_impact_narrative"] = (
+            "Messaging alone shows a statistically significant effect on completion rates — "
+            "even without the detach/unassign action, the message itself may have nudged some customers."
+        )
+    else:
+        ctx["msg_impact_narrative"] = (
+            "Messaging alone shows no significant difference from holdout on either FS or franchise completion. "
+            "The message by itself did not measurably change customer behavior."
+        )
+
+    # ── Milestones ────────────────────────────────────────────────────────
     ms_counts = defaultdict(lambda: defaultdict(int))
     all_milestones = set()
-    for _, row in df_ms.iterrows():
+    for _, row in df_detail.iterrows():
         c = row["cohort"]
-        m = row["milestone"]
-        ms_counts[c][m] = int(row["cnt"])
+        m = row.get("main_funnel_milestone") or "Unknown"
+        ms_counts[c][m] += 1
         all_milestones.add(m)
 
     milestone_order = [
@@ -426,19 +511,27 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
         if m not in milestone_order and m != "Unknown":
             milestone_order.append(m)
     ctx["milestones_list_json"] = json.dumps(milestone_order)
-    ctx["ms_counts_json"] = json.dumps({c: dict(ms_counts.get(c, {})) for c in COHORTS})
+    ctx["ms_counts_json"] = json.dumps({c: dict(ms_counts.get(c, {})) for c in ALL_COHORTS})
 
-    # ── DIWM ──────────────────────────────────────────────────────────────────
-    df_d = data["diwm"]
+    # ── DIWM ──────────────────────────────────────────────────────────────
+    df_diwm = data["diwm"].copy()
+    df_diwm["cohort"] = df_diwm.apply(
+        lambda r: classify(
+            r["engagement_id"], r["recipe"],
+            int(r["low_intent_flag"]) == 1,
+            detach_ids, unassign_ids,
+        ), axis=1,
+    )
+
     diwm = {}
-    for _, row in df_d.iterrows():
-        c = row["cohort"]
+    for c in ALL_COHORTS:
+        sub = df_diwm[df_diwm["cohort"] == c]
         diwm[c] = {
-            "ever_started": int(row["ever_started"]),
-            "started_post_msg": int(row["started_post_msg"]),
-            "completed": int(row["completed"]),
-            "completed_post_msg": int(row["completed_post_msg"]),
-            "rev_post_msg": float(row["rev_post_msg"] or 0),
+            "ever_started": sub[sub["diwm_started"].astype(int) == 1]["auth_id"].nunique(),
+            "started_post_msg": sub[sub["started_post_msg"].astype(int) == 1]["auth_id"].nunique(),
+            "completed": sub[sub["diwm_completed"].astype(int) == 1]["auth_id"].nunique(),
+            "completed_post_msg": sub[sub["completed_post_msg"].astype(int) == 1]["auth_id"].nunique(),
+            "rev_post_msg": float(sub["rev_post_msg"].astype(float).sum()),
         }
 
     diwm_labels = [
@@ -451,180 +544,147 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
     diwm_rows = []
     for label, key, show_pct in diwm_labels:
         row_data = {"label": label}
-        for c, col_key in [("Holdout_Full", "full_val"), ("Holdout_LowIntent", "li_val"), ("Detach", "det_val"), ("Unassign", "una_val")]:
+        for c, col_key in [
+            ("Holdout_Full", "hf_val"), ("Holdout_LowIntent", "hli_val"),
+            ("Detach_Acted", "da_val"), ("Detach_MsgOnly", "dmo_val"),
+            ("Unassign_Acted", "ua_val"), ("Unassign_MsgOnly", "umo_val"),
+        ]:
             val = diwm.get(c, {}).get(key, 0)
             if key == "rev_post_msg":
                 row_data[col_key] = f"${val:,.0f}"
             elif show_pct:
-                pct = fmt_pct(val / sizes.get(c, 1))
+                sz = sizes.get(c, 1) or 1
+                pct = fmt_pct(val / sz)
                 row_data[col_key] = f"{val:,} ({pct})"
             else:
                 row_data[col_key] = str(int(val))
         diwm_rows.append(row_data)
     ctx["diwm_rows"] = diwm_rows
 
-    post_msg_starts = sum(diwm.get(c, {}).get("started_post_msg", 0) for c in COHORTS)
+    post_msg_starts = sum(diwm.get(c, {}).get("started_post_msg", 0) for c in ALL_COHORTS)
     if post_msg_starts == 0:
-        ctx["diwm_headline"] = "Zero DIWM/DIY re-engagement across all cohorts."
-        ctx["diwm_detail"] = (
-            "Detach's theoretical advantage — redirecting customers to self-file — "
-            "has produced zero conversions. No new DIWM/DIY starts post-message in any group."
-        )
         ctx["diwm_narrative"] = (
-            f"<strong>Zero new DIWM/DIY starts post-message across all cohorts.</strong> "
-            f"The detach pathway has not activated any DIWM/DIY re-engagement. "
-            f"The ~{fmt_pct(diwm.get('Detach', {}).get('ever_started', 0) / sizes.get('Detach', 1))} "
-            f"'ever started' reflects prior separate DIY/DIWM usage, not a post-intervention shift."
-        )
-        ctx["diwm_recommendation"] = (
-            "Detach's DIWM upside remains unproven. Zero post-message DIWM starts is a strong null signal."
+            "<strong>Zero new DIWM/DIY starts post-message across all cohorts.</strong> "
+            "The detach pathway has not activated any DIWM/DIY re-engagement."
         )
     else:
-        ctx["diwm_headline"] = f"{post_msg_starts} DIWM/DIY start(s) post-message detected."
-        ctx["diwm_detail"] = "Some post-message DIWM activity has emerged. Monitor for continued growth."
-        ctx["diwm_narrative"] = f"<strong>{post_msg_starts} new DIWM/DIY start(s) post-message detected.</strong> Emerging signal worth monitoring."
-        ctx["diwm_recommendation"] = "DIWM re-engagement is emerging. Continue monitoring."
+        ctx["diwm_narrative"] = (
+            f"<strong>{post_msg_starts} new DIWM/DIY start(s) post-message detected.</strong> "
+            "Emerging signal worth monitoring."
+        )
 
-    # ── Appointments ──────────────────────────────────────────────────────────
-    df_a = data["appointments"]
-    appt_daily = defaultdict(dict)
+    # ── Appointments (daily, post-message) ────────────────────────────────
+    appt_daily = defaultdict(lambda: defaultdict(int))
     appts_total = defaultdict(int)
-    for _, row in df_a.iterrows():
+    for _, row in df_detail.iterrows():
         c = row["cohort"]
-        d = int(row["days_since_msg"])
-        n = int(row["appts"])
-        if d >= 0:
-            appt_daily[c][d] = n
-            appts_total[c] += n
+        if row.get("appt_days_since_msg") is not None and not pd.isna(row["appt_days_since_msg"]):
+            d = int(row["appt_days_since_msg"])
+            if d >= 0:
+                appt_daily[c][d] += 1
+                appts_total[c] += 1
+    ctx["appts_total"] = dict(appts_total)
 
     max_appt_day = 15
     for c in appt_daily:
         if appt_daily[c]:
             max_appt_day = max(max_appt_day, max(appt_daily[c].keys()) + 1)
     ctx["max_appt_day"] = max_appt_day
-    ctx["appt_daily_json"] = json.dumps({c: dict(appt_daily.get(c, {})) for c in ["Detach", "Holdout_Full", "Unassign"]})
-    ctx["appts_total"] = dict(appts_total)
+    ctx["appt_daily_json"] = json.dumps({
+        c: dict(appt_daily.get(c, {}))
+        for c in ["Detach_Acted", "Detach_MsgOnly", "Holdout_Full", "Unassign_Acted", "Unassign_MsgOnly"]
+    })
 
-    # ── Main metrics tables ───────────────────────────────────────────────────
+    # ── Main metrics table ────────────────────────────────────────────────
     def build_main_metrics(ctrl_cohort, ctrl_size):
         metrics = []
         metric_defs = [
-            ("FS Filing Rate", None, "filing", lambda c: filing_totals.get(c, 0)),
-            ("WIP Clearing (off-queue)", None, "wip_clear", lambda c: wip.get(c, {}).get("off_queue", 0)),
-            ("Completed Not Filed", "(system closures)", "cnf", lambda c: states_counts[c].get("Completed_Not_Filed", 0)),
-            ("Appt Handled Post-Msg", None, "appt", lambda c: appts_total.get(c, 0)),
+            ("FS Filing Rate", None, lambda c: filing_totals.get(c, 0)),
+            ("Franchise Completion", "(auth-level, any product)", lambda c: fc_stats.get(c, {}).get("franchise_completers", 0)),
+            ("WIP Clearing (off-queue)", None, lambda c: wip.get(c, {}).get("off_queue", 0)),
+            ("Completed Not Filed", "(system closures)", lambda c: states_counts[c].get("Completed_Not_Filed", 0)),
+            ("Appt Handled Post-Msg", None, lambda c: appts_total.get(c, 0)),
         ]
-        for label, sublabel, _, count_fn in metric_defs:
+        for label, sublabel, count_fn in metric_defs:
             ctrl_n = count_fn(ctrl_cohort)
-            det_n = count_fn("Detach")
-            una_n = count_fn("Unassign")
+            row_items = []
+            for treat in ["Detach_Acted", "Unassign_Acted"]:
+                treat_n = count_fn(treat)
+                treat_size = sizes.get(treat, 1) or 1
+                ctrl_rate = ctrl_n / ctrl_size if ctrl_size else 0
+                treat_rate = treat_n / treat_size
+                p, _, sig = stat_test(treat_n, treat_size - treat_n, ctrl_n, ctrl_size - ctrl_n)
+                row_items.append({
+                    "rate": fmt_pct(treat_rate), "count": f"{treat_n:,}/{treat_size:,}",
+                    "itc": itc(treat_rate, ctrl_rate), "itc_class": itc_class(treat_rate, ctrl_rate),
+                    "pval": fmt_p(p, sig), "sig_class": "sig" if sig else "not-sig",
+                })
+
             ctrl_rate = ctrl_n / ctrl_size if ctrl_size else 0
-            det_rate = det_n / sizes["Detach"] if sizes["Detach"] else 0
-            una_rate = una_n / sizes["Unassign"] if sizes["Unassign"] else 0
-
-            det_p, _, det_sig = stat_test(det_n, sizes["Detach"] - det_n, ctrl_n, ctrl_size - ctrl_n)
-            una_p, _, una_sig = stat_test(una_n, sizes["Unassign"] - una_n, ctrl_n, ctrl_size - ctrl_n)
-
             metrics.append({
                 "label": label, "sublabel": sublabel,
                 "ctrl_rate": fmt_pct(ctrl_rate), "ctrl_count": f"{ctrl_n:,}/{ctrl_size:,}",
-                "det_rate": fmt_pct(det_rate), "det_count": f"{det_n:,}/{sizes['Detach']:,}",
-                "det_itc": itc(det_rate, ctrl_rate), "det_itc_class": itc_class(det_rate, ctrl_rate),
-                "det_pval": fmt_p(det_p, det_sig), "det_sig_class": "sig" if det_sig else "not-sig",
-                "una_rate": fmt_pct(una_rate), "una_count": f"{una_n:,}/{sizes['Unassign']:,}",
-                "una_itc": itc(una_rate, ctrl_rate), "una_itc_class": itc_class(una_rate, ctrl_rate),
-                "una_pval": fmt_p(una_p, una_sig), "una_sig_class": "sig" if una_sig else "not-sig",
+                "da": row_items[0], "ua": row_items[1],
             })
         return metrics
 
-    ctx["main_metrics_full"] = build_main_metrics("Holdout_Full", sizes["Holdout_Full"])
-    ctx["main_metrics_li"] = build_main_metrics("Holdout_LowIntent", sizes["Holdout_LowIntent"])
+    ctx["main_metrics_full"] = build_main_metrics("Holdout_Full", sizes.get("Holdout_Full", 1))
+    ctx["main_metrics_li"] = build_main_metrics("Holdout_LowIntent", sizes.get("Holdout_LowIntent", 1))
 
-    # FS filing significance flags for narrative
-    fs_full = ctx["main_metrics_full"][0]
-    fs_li = ctx["main_metrics_li"][0]
-    ctx["fs_full_sig"] = fs_full["det_sig_class"] == "sig" or fs_full["una_sig_class"] == "sig"
-    ctx["fs_li_sig"] = fs_li["det_sig_class"] == "sig" or fs_li["una_sig_class"] == "sig"
-    ctx["fs_full_det_itc"] = fs_full["det_itc"]
-    ctx["fs_full_det_p"] = fs_full["det_pval"]
-    ctx["fs_full_una_itc"] = fs_full["una_itc"]
-    ctx["fs_full_una_p"] = fs_full["una_pval"]
-    ctx["treatment_fs_rate"] = fmt_pct(filing_totals.get("Detach", 0) / sizes["Detach"])
-
-    if li_filing_count == 0:
-        ctx["li_interpretation"] = (
-            "This suggests the messaging + intervention activated some behavior in what would have been "
-            "fully dormant customers. However, the absolute lift is small."
-        )
-    else:
-        ctx["li_interpretation"] = (
-            f"The low-intent holdout had {li_filing_count} filing(s), indicating some baseline activity."
-        )
-
-    if li_filing_count == 0 and appts_total.get("Holdout_LowIntent", 0) == 0:
-        ctx["li_finding_text"] = (
-            "Against this baseline, both treatments show statistically significant lifts (p < 0.001). "
-            f"This suggests the messaging + action did activate some behavior in customers who would "
-            f"otherwise have remained completely dormant. However, the absolute magnitude remains small "
-            f"(~{ctx['treatment_fs_rate']} FS filing rate)."
-        )
-    else:
-        li_f = li_filing_count
-        li_a = appts_total.get("Holdout_LowIntent", 0)
-        ctx["li_finding_text"] = f"Low-intent holdout shows {li_f} filing(s) and {li_a} appointment(s) post-message."
-
-    ctx["customer_outcome_summary"] = (
-        "No significant difference. Neither treatment meaningfully improves FS filing or franchise completion vs holdout."
-        if not ctx["fs_full_sig"]
-        else "Some significant differences detected. Review the detailed tables."
-    )
-    ctx["overall_recommendation"] = (
-        "Detach for immediate WIP clearing if that's the operational priority. "
-        f"Re-read at day 7 post-detach (by {(DETACH_DATE + datetime.timedelta(days=7)).strftime('%-m/%-d')}) "
-        "to check for DIWM emergence. If none, detach's only advantage over unassign is the system-closure, "
-        "with no customer outcome benefit."
-    )
-
-    # ── Summary tests table ───────────────────────────────────────────────────
+    # ── Summary tests ─────────────────────────────────────────────────────
     summary_tests = []
     test_specs = [
-        ("FS Filing", "Detach", "Full", "Holdout_Full", filing_totals),
-        ("FS Filing", "Unassign", "Full", "Holdout_Full", filing_totals),
-        ("FS Filing", "Detach", "Low Int", "Holdout_LowIntent", filing_totals),
-        ("FS Filing", "Unassign", "Low Int", "Holdout_LowIntent", filing_totals),
-        ("WIP Clearing", "Detach", "Full", "Holdout_Full", {c: wip.get(c, {}).get("off_queue", 0) for c in COHORTS}),
-        ("WIP Clearing", "Unassign", "Full", "Holdout_Full", {c: wip.get(c, {}).get("off_queue", 0) for c in COHORTS}),
-        ("WIP Clearing", "Detach", "Low Int", "Holdout_LowIntent", {c: wip.get(c, {}).get("off_queue", 0) for c in COHORTS}),
-        ("WIP Clearing", "Unassign", "Low Int", "Holdout_LowIntent", {c: wip.get(c, {}).get("off_queue", 0) for c in COHORTS}),
-        ("Comp Not Filed", "Detach", "Full", "Holdout_Full", {c: states_counts[c].get("Completed_Not_Filed", 0) for c in COHORTS}),
-        ("Comp Not Filed", "Unassign", "Full", "Holdout_Full", {c: states_counts[c].get("Completed_Not_Filed", 0) for c in COHORTS}),
-        ("Comp Not Filed", "Detach", "Low Int", "Holdout_LowIntent", {c: states_counts[c].get("Completed_Not_Filed", 0) for c in COHORTS}),
-        ("Comp Not Filed", "Unassign", "Low Int", "Holdout_LowIntent", {c: states_counts[c].get("Completed_Not_Filed", 0) for c in COHORTS}),
-        ("Appt Post-Msg", "Detach", "Full", "Holdout_Full", dict(appts_total)),
-        ("Appt Post-Msg", "Unassign", "Full", "Holdout_Full", dict(appts_total)),
-        ("Appt Post-Msg", "Detach", "Low Int", "Holdout_LowIntent", dict(appts_total)),
-        ("Appt Post-Msg", "Unassign", "Low Int", "Holdout_LowIntent", dict(appts_total)),
+        ("FS Filing", "Detach_Acted", "Full", "Holdout_Full", dict(filing_totals)),
+        ("FS Filing", "Unassign_Acted", "Full", "Holdout_Full", dict(filing_totals)),
+        ("FS Filing", "Detach_Acted", "Low Int", "Holdout_LowIntent", dict(filing_totals)),
+        ("FS Filing", "Unassign_Acted", "Low Int", "Holdout_LowIntent", dict(filing_totals)),
+        ("Franchise Comp", "Detach_Acted", "Full", "Holdout_Full",
+         {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}),
+        ("Franchise Comp", "Unassign_Acted", "Full", "Holdout_Full",
+         {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}),
+        ("WIP Clearing", "Detach_Acted", "Full", "Holdout_Full",
+         {c: wip.get(c, {}).get("off_queue", 0) for c in ALL_COHORTS}),
+        ("WIP Clearing", "Unassign_Acted", "Full", "Holdout_Full",
+         {c: wip.get(c, {}).get("off_queue", 0) for c in ALL_COHORTS}),
+        ("Msg Only FS", "Detach_MsgOnly", "Full", "Holdout_Full", dict(filing_totals)),
+        ("Msg Only FS", "Unassign_MsgOnly", "Full", "Holdout_Full", dict(filing_totals)),
     ]
-    for metric, treatment, control_label, ctrl_cohort, counts in test_specs:
+    for metric, treatment, ctrl_label, ctrl_cohort, counts in test_specs:
         treat_n = counts.get(treatment, 0)
         ctrl_n = counts.get(ctrl_cohort, 0)
-        treat_size = sizes.get(treatment, 1)
-        ctrl_size = sizes.get(ctrl_cohort, 1)
+        treat_size = sizes.get(treatment, 1) or 1
+        ctrl_size = sizes.get(ctrl_cohort, 1) or 1
         treat_rate = treat_n / treat_size
         ctrl_rate = ctrl_n / ctrl_size
-
         p, test_type, sig = stat_test(treat_n, treat_size - treat_n, ctrl_n, ctrl_size - ctrl_n)
-
         summary_tests.append({
-            "metric": metric, "treatment": treatment, "control": control_label,
+            "metric": metric, "treatment": treatment.replace("_", " "), "control": ctrl_label,
             "treat_rate": fmt_pct(treat_rate), "ctrl_rate": fmt_pct(ctrl_rate),
             "itc": itc(treat_rate, ctrl_rate),
-            "pval": f"<0.001" if p < 0.001 else f"{p:.3f}",
+            "pval": "<0.001" if p < 0.001 else f"{p:.3f}",
             "test_type": test_type,
             "sig": sig, "sig_class": "sig" if sig else "not-sig",
             "sig_label": "***" if sig else "—",
         })
     ctx["summary_tests"] = summary_tests
+
+    # ── Narrative / interpretation ────────────────────────────────────────
+    da_fs_rate = fc_stats.get("Detach_Acted", {}).get("fs_rate", 0)
+    ua_fs_rate = fc_stats.get("Unassign_Acted", {}).get("fs_rate", 0)
+    hf_fs_rate = fc_stats.get("Holdout_Full", {}).get("fs_rate", 0)
+    da_fr_rate = fc_stats.get("Detach_Acted", {}).get("franchise_rate", 0)
+    ua_fr_rate = fc_stats.get("Unassign_Acted", {}).get("franchise_rate", 0)
+    hf_fr_rate = fc_stats.get("Holdout_Full", {}).get("franchise_rate", 0)
+
+    ctx["overall_recommendation"] = (
+        f"Detach for immediate WIP clearing if that's the operational priority. "
+        f"Franchise completion rates should be monitored weekly as the filing season progresses."
+    )
+    ctx["customer_outcome_summary"] = (
+        f"Detach (acted) FS completion: {fmt_pct(da_fs_rate)}, franchise: {fmt_pct(da_fr_rate)}. "
+        f"Unassign (acted) FS completion: {fmt_pct(ua_fs_rate)}, franchise: {fmt_pct(ua_fr_rate)}. "
+        f"Holdout: FS {fmt_pct(hf_fs_rate)}, franchise {fmt_pct(hf_fr_rate)}."
+    )
 
     return ctx
 
@@ -685,7 +745,7 @@ def send_failure_email(error_msg: str):
 
 if __name__ == "__main__":
     try:
-        log.info("Starting detach viz refresh...")
+        log.info("Starting detach viz refresh (v2 — 6-cohort)...")
         token = get_databricks_token()
         data = run_queries(token)
         ctx = build_context(data)

@@ -10,7 +10,9 @@
     --c-holdout: #6366f1;
     --c-holdout-li: #a855f7;
     --c-detach: #ef4444;
+    --c-detach-msg: #fca5a5;
     --c-unassign: #22c55e;
+    --c-unassign-msg: #86efac;
     --c-bg: #f8fafc;
     --c-card: #ffffff;
     --c-border: #e2e8f0;
@@ -20,16 +22,17 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--c-bg); color: var(--c-text); line-height: 1.6; }
-  .container { max-width: 1360px; margin: 0 auto; padding: 24px; }
+  .container { max-width: 1440px; margin: 0 auto; padding: 24px; }
   h1 { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
   .subtitle { color: var(--c-muted); font-size: 15px; margin-bottom: 32px; }
   h2 { font-size: 20px; font-weight: 600; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--c-border); }
   h3 { font-size: 16px; font-weight: 600; margin: 24px 0 12px; }
   .card { background: var(--c-card); border: 1px solid var(--c-border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
   .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
-  @media (max-width: 900px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+  .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  @media (max-width: 1100px) { .grid-6 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 700px) { .grid-2, .grid-4, .grid-6 { grid-template-columns: 1fr; } }
   .chart-wrap { position: relative; height: 350px; }
   .chart-wrap-tall { position: relative; height: 420px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -40,15 +43,18 @@
   .badge-holdout { background: #e0e7ff; color: #4338ca; }
   .badge-holdout-li { background: #f3e8ff; color: #7e22ce; }
   .badge-detach { background: #fee2e2; color: #b91c1c; }
+  .badge-detach-msg { background: #fff1f2; color: #e11d48; border: 1px dashed #fca5a5; }
   .badge-unassign { background: #dcfce7; color: #15803d; }
+  .badge-unassign-msg { background: #f0fdf4; color: #16a34a; border: 1px dashed #86efac; }
   .callout { border-left: 4px solid var(--c-accent); background: #eff6ff; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 16px 0; font-size: 14px; }
   .callout-warn { border-left-color: #f59e0b; background: #fffbeb; }
   .callout-green { border-left-color: #22c55e; background: #f0fdf4; }
   .callout-red { border-left-color: #ef4444; background: #fef2f2; }
-  .metric-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-  .metric-box { flex: 1; min-width: 180px; background: var(--c-card); border: 1px solid var(--c-border); border-radius: 10px; padding: 16px; text-align: center; }
+  .metric-box { background: var(--c-card); border: 1px solid var(--c-border); border-radius: 10px; padding: 16px; text-align: center; }
   .metric-box .val { font-size: 28px; font-weight: 700; }
   .metric-box .lbl { font-size: 12px; color: var(--c-muted); margin-top: 4px; }
+  .metric-box.secondary { opacity: 0.7; border-style: dashed; }
+  .metric-box.secondary .val { font-size: 22px; }
   .sig { color: #dc2626; font-weight: 700; }
   .not-sig { color: #9ca3af; }
   .p-val { font-family: 'SF Mono', 'Menlo', monospace; font-size: 12px; }
@@ -60,59 +66,48 @@
   .stat-table td { font-size: 12px; }
   .stat-table th { font-size: 11px; }
   .auto-updated { font-size: 11px; color: var(--c-muted); text-align: right; margin-top: 8px; }
+  .section-label { font-size: 12px; color: var(--c-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 <div class="container">
 
 <h1>FS WIP Detach / Unassign Test — Statistical Analysis</h1>
-<p class="subtitle">Dual holdout comparison with ITC &amp; p-values | List Pull 3/9 | Messages 3/10 | Scrub 3/17 | Unassigned 3/19 | Detach Failed 3/20 | Detach Re-run 3/24 | Data as of {{ data_date }}</p>
+<p class="subtitle">6-cohort comparison (acted vs msg-only) with franchise completion | Data as of {{ data_date }}</p>
 
 <!-- ── TIMELINE ── -->
 <h2>Test Timeline</h2>
 <div class="card">
-  <div style="position:relative;height:100px;margin:20px 0 50px">
+  <div style="position:relative;height:90px;margin:20px 0 40px">
     <div style="position:absolute;top:30px;left:0;right:0;height:4px;background:#e2e8f0;border-radius:2px"></div>
     <div style="position:absolute;left:0%;top:12px;text-align:center">
       <div style="font-size:11px;font-weight:700;color:#3b82f6">3/9</div>
       <div style="width:2px;height:14px;background:#3b82f6;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#3b82f6;border-radius:50%;margin:0 auto"></div>
+      <div style="width:12px;height:12px;background:#3b82f6;border-radius:50%;margin:0 auto"></div>
       <div style="font-size:10px;color:#64748b;margin-top:4px">List Pull<br>~39K engs</div>
     </div>
-    <div style="position:absolute;left:6.25%;top:12px;text-align:center;transform:translateX(-50%)">
+    <div style="position:absolute;left:6%;top:12px;text-align:center;transform:translateX(-50%)">
       <div style="font-size:11px;font-weight:700;color:#3b82f6">3/10</div>
       <div style="width:2px;height:14px;background:#3b82f6;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#3b82f6;border-radius:50%;margin:0 auto"></div>
+      <div style="width:12px;height:12px;background:#3b82f6;border-radius:50%;margin:0 auto"></div>
       <div style="font-size:10px;color:#64748b;margin-top:4px">Messages<br>Sent</div>
     </div>
-    <div style="position:absolute;left:50%;top:12px;text-align:center;transform:translateX(-50%)">
-      <div style="font-size:11px;font-weight:700;color:#64748b">3/17</div>
-      <div style="width:2px;height:14px;background:#94a3b8;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#94a3b8;border-radius:50%;margin:0 auto"></div>
-      <div style="font-size:10px;color:#64748b;margin-top:4px">Test Read #1<br>Lists Scrubbed</div>
-    </div>
-    <div style="position:absolute;left:62.5%;top:12px;text-align:center;transform:translateX(-50%)">
+    <div style="position:absolute;left:60%;top:12px;text-align:center;transform:translateX(-50%)">
       <div style="font-size:11px;font-weight:700;color:#22c55e">3/19</div>
       <div style="width:2px;height:14px;background:#22c55e;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#22c55e;border-radius:50%;margin:0 auto"></div>
-      <div style="font-size:10px;color:#64748b;margin-top:4px">Unassign<br>Executed</div>
+      <div style="width:12px;height:12px;background:#22c55e;border-radius:50%;margin:0 auto"></div>
+      <div style="font-size:10px;color:#64748b;margin-top:4px">Unassign<br>Executed<br>({{ sizes.Unassign_Acted | commaformat }})</div>
     </div>
-    <div style="position:absolute;left:68.75%;top:12px;text-align:center;transform:translateX(-50%)">
-      <div style="font-size:11px;font-weight:700;color:#dc2626">3/20</div>
-      <div style="width:2px;height:14px;background:#dc2626;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#dc2626;border-radius:50%;margin:0 auto;border:2px solid #dc2626;box-sizing:border-box"></div>
-      <div style="font-size:10px;color:#dc2626;margin-top:4px">Detach Failed<br>(duplicates)</div>
-    </div>
-    <div style="position:absolute;left:93.75%;top:12px;text-align:center;transform:translateX(-50%)">
+    <div style="position:absolute;left:90%;top:12px;text-align:center;transform:translateX(-50%)">
       <div style="font-size:11px;font-weight:700;color:#ef4444">3/24</div>
       <div style="width:2px;height:14px;background:#ef4444;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#ef4444;border-radius:50%;margin:0 auto"></div>
-      <div style="font-size:10px;color:#64748b;margin-top:4px">Detach<br>Re-run</div>
+      <div style="width:12px;height:12px;background:#ef4444;border-radius:50%;margin:0 auto"></div>
+      <div style="font-size:10px;color:#64748b;margin-top:4px">Detach<br>Executed<br>({{ sizes.Detach_Acted | commaformat }})</div>
     </div>
     <div style="position:absolute;left:100%;top:12px;text-align:center;transform:translateX(-100%)">
       <div style="font-size:11px;font-weight:700;color:#64748b">{{ data_date_short }}</div>
       <div style="width:2px;height:14px;background:#94a3b8;margin:2px auto"></div>
-      <div style="width:10px;height:10px;background:#94a3b8;border-radius:50%;margin:0 auto"></div>
+      <div style="width:12px;height:12px;background:#94a3b8;border-radius:50%;margin:0 auto"></div>
       <div style="font-size:10px;color:#64748b;margin-top:4px">This<br>Read</div>
     </div>
   </div>
@@ -120,31 +115,133 @@
 
 <!-- ── COHORT OVERVIEW ── -->
 <h2>Cohort Overview</h2>
+<p class="section-label">Primary cohorts (acted upon)</p>
 <div class="grid-4">
-  <div class="metric-box">
+  <div class="metric-box" style="border-color:var(--c-holdout)">
     <div class="val" style="color:var(--c-holdout)">{{ sizes.Holdout_Full | commaformat }}</div>
     <div class="lbl">Holdout — Full (10%)<br>No message, no action</div>
   </div>
-  <div class="metric-box" style="border-color: var(--c-holdout-li)">
+  <div class="metric-box" style="border-color:var(--c-holdout-li)">
     <div class="val" style="color:var(--c-holdout-li)">{{ sizes.Holdout_LowIntent | commaformat }}</div>
-    <div class="lbl">Holdout — Low Intent Only<br>Filtered to match treatment scrub</div>
+    <div class="lbl">Holdout — Low Intent<br>Filtered to match scrub</div>
   </div>
-  <div class="metric-box">
-    <div class="val" style="color:var(--c-detach)">{{ sizes.Detach | commaformat }}</div>
-    <div class="lbl">Detach Messaging (45%)<br>Detached 3/24</div>
+  <div class="metric-box" style="border-color:var(--c-detach)">
+    <div class="val" style="color:var(--c-detach)">{{ sizes.Detach_Acted | commaformat }}</div>
+    <div class="lbl">Actually Detached<br>Msg + detached 3/24</div>
   </div>
-  <div class="metric-box">
-    <div class="val" style="color:var(--c-unassign)">{{ sizes.Unassign | commaformat }}</div>
-    <div class="lbl">Unassign Messaging (45%)<br>Unassigned 3/19</div>
+  <div class="metric-box" style="border-color:var(--c-unassign)">
+    <div class="val" style="color:var(--c-unassign)">{{ sizes.Unassign_Acted | commaformat }}</div>
+    <div class="lbl">Actually Unassigned<br>Msg + unassigned 3/19</div>
+  </div>
+</div>
+<p class="section-label" style="margin-top:12px">Messaging only (received message but no action taken)</p>
+<div class="grid-2">
+  <div class="metric-box secondary" style="border-color:var(--c-detach-msg)">
+    <div class="val" style="color:var(--c-detach-msg)">{{ sizes.Detach_MsgOnly | commaformat }}</div>
+    <div class="lbl">Detach Msg Only — received detach message but NOT detached</div>
+  </div>
+  <div class="metric-box secondary" style="border-color:var(--c-unassign-msg)">
+    <div class="val" style="color:var(--c-unassign-msg)">{{ sizes.Unassign_MsgOnly | commaformat }}</div>
+    <div class="lbl">Unassign Msg Only — received unassign message but NOT unassigned</div>
   </div>
 </div>
 <div class="callout-warn callout">
-  <strong>Two holdout groups:</strong> The "Full" holdout ({{ sizes.Holdout_Full | commaformat }}) includes all random-assigned holdout engagements (including those with actions — appts, docs, chats). The "Low Intent" holdout ({{ sizes.Holdout_LowIntent | commaformat }}) is filtered to only those with no customer actions, matching the scrubbed treatment lists. Comparisons against the low-intent holdout are the more apples-to-apples comparison for the treatment groups.
+  <strong>Cohort structure:</strong> The treatment groups are split into "acted" (actually detached/unassigned per the bulk action files) and "msg only" (received the messaging but no action was taken). Primary comparisons use the "acted" cohorts vs holdout. The "msg only" cohorts help isolate whether the message itself had any effect.
 </div>
 
-<!-- ── MAIN STAT TABLE ── -->
-<h2>1. Key Metrics — Statistical Comparison</h2>
-<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">ITC = Index to Control (treatment rate ÷ control rate × 100). Values >100 = treatment outperforms control. p-values from chi-square (n≥5) or Fisher's exact (n<5). *** = p < 0.05.</p>
+<!-- ── FRANCHISE COMPLETION ── -->
+<h2>1. Franchise Completion (Auth-Level)</h2>
+<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">Completion measured at auth_id level using cgan_ustax_ws.core — one auth can have multiple engagements across products. FS completion = filed via Full Service. Franchise completion = completed any TurboTax product.</p>
+
+<div class="card">
+<h3>vs Full Holdout (n={{ fc_ctrl_full.auths }})</h3>
+<table class="stat-table">
+  <tr>
+    <th style="text-align:left">Cohort</th>
+    <th>Auths</th>
+    <th colspan="2">FS Completion</th>
+    <th>ITC</th><th>p-value</th>
+    <th colspan="2">Franchise Completion</th>
+    <th>ITC</th><th>p-value</th>
+  </tr>
+  <tr style="background:#f8fafc">
+    <td><span class="badge badge-holdout">Holdout Full</span></td>
+    <td>{{ fc_ctrl_full.auths }}</td>
+    <td>{{ fc_ctrl_full.fs_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ fc_ctrl_full.fs_count }}</td>
+    <td>—</td><td>—</td>
+    <td>{{ fc_ctrl_full.fr_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ fc_ctrl_full.fr_count }}</td>
+    <td>—</td><td>—</td>
+  </tr>
+  {% for r in fc_rows_full %}
+  <tr>
+    <td><span class="badge {% if 'Detach' in r.label %}badge-detach{% else %}badge-unassign{% endif %}">{{ r.label }}</span></td>
+    <td>{{ r.auths }}</td>
+    <td>{{ r.fs_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ r.fs_count }}</td>
+    <td><span class="itc-badge {{ r.fs_itc_class }}">{{ r.fs_itc }}</span></td>
+    <td class="p-val {{ r.fs_sig_class }}">{{ r.fs_pval }}</td>
+    <td>{{ r.fr_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ r.fr_count }}</td>
+    <td><span class="itc-badge {{ r.fr_itc_class }}">{{ r.fr_itc }}</span></td>
+    <td class="p-val {{ r.fr_sig_class }}">{{ r.fr_pval }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<div class="card">
+<h3>vs Low-Intent Holdout (n={{ fc_ctrl_li.auths }})</h3>
+<table class="stat-table">
+  <tr>
+    <th style="text-align:left">Cohort</th>
+    <th>Auths</th>
+    <th colspan="2">FS Completion</th>
+    <th>ITC</th><th>p-value</th>
+    <th colspan="2">Franchise Completion</th>
+    <th>ITC</th><th>p-value</th>
+  </tr>
+  <tr style="background:#f8fafc">
+    <td><span class="badge badge-holdout-li">Holdout LI</span></td>
+    <td>{{ fc_ctrl_li.auths }}</td>
+    <td>{{ fc_ctrl_li.fs_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ fc_ctrl_li.fs_count }}</td>
+    <td>—</td><td>—</td>
+    <td>{{ fc_ctrl_li.fr_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ fc_ctrl_li.fr_count }}</td>
+    <td>—</td><td>—</td>
+  </tr>
+  {% for r in fc_rows_li %}
+  <tr>
+    <td><span class="badge {% if 'Detach' in r.label %}badge-detach{% else %}badge-unassign{% endif %}">{{ r.label }}</span></td>
+    <td>{{ r.auths }}</td>
+    <td>{{ r.fs_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ r.fs_count }}</td>
+    <td><span class="itc-badge {{ r.fs_itc_class }}">{{ r.fs_itc }}</span></td>
+    <td class="p-val {{ r.fs_sig_class }}">{{ r.fs_pval }}</td>
+    <td>{{ r.fr_rate }}</td><td class="text-sm" style="color:var(--c-muted)">{{ r.fr_count }}</td>
+    <td><span class="itc-badge {{ r.fr_itc_class }}">{{ r.fr_itc }}</span></td>
+    <td class="p-val {{ r.fr_sig_class }}">{{ r.fr_pval }}</td>
+  </tr>
+  {% endfor %}
+</table>
+</div>
+
+<div class="callout callout-warn">
+  <strong>Messaging impact (msg-only cohorts vs full holdout):</strong>
+  <table class="stat-table" style="margin-top:8px">
+    <tr><th style="text-align:left">Cohort</th><th>Auths</th><th>FS Comp</th><th>p</th><th>Franchise Comp</th><th>p</th></tr>
+    {% for c in ['Detach_MsgOnly', 'Unassign_MsgOnly'] %}
+    <tr>
+      <td>{{ msg_impact[c].label }}</td>
+      <td>{{ msg_impact[c].auths }}</td>
+      <td>{{ msg_impact[c].fs_rate }}</td>
+      <td class="{{ msg_impact[c].fs_sig_class }}">{{ msg_impact[c].fs_pval }}</td>
+      <td>{{ msg_impact[c].fr_rate }}</td>
+      <td class="{{ msg_impact[c].get('fr_sig_class', 'not-sig') }}">{{ msg_impact[c].fr_pval }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p style="margin-top:8px">{{ msg_impact_narrative }}</p>
+</div>
+
+<!-- ── KEY METRICS ── -->
+<h2>2. Key Metrics — Statistical Comparison (Acted Cohorts)</h2>
+<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">ITC = treatment rate / control rate x 100. p-values from chi-square (n >= 5) or Fisher exact (n < 5).</p>
 
 <div class="card">
 <h3>vs Full Holdout (n={{ sizes.Holdout_Full | commaformat }})</h3>
@@ -152,107 +249,84 @@
   <tr>
     <th style="text-align:left">Metric</th>
     <th><span class="badge badge-holdout">Holdout Full</span></th>
-    <th><span class="badge badge-detach">Detach</span></th>
-    <th>ITC</th>
-    <th>p-value</th>
-    <th><span class="badge badge-unassign">Unassign</span></th>
-    <th>ITC</th>
-    <th>p-value</th>
+    <th><span class="badge badge-detach">Detach (Acted)</span></th>
+    <th>ITC</th><th>p-value</th>
+    <th><span class="badge badge-unassign">Unassign (Acted)</span></th>
+    <th>ITC</th><th>p-value</th>
   </tr>
   {% for m in main_metrics_full %}
   <tr>
     <td style="text-align:left"><strong>{{ m.label }}</strong>{% if m.sublabel %}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.sublabel }}</span>{% endif %}</td>
     <td>{{ m.ctrl_rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.ctrl_count }}</span></td>
-    <td>{{ m.det_rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.det_count }}</span></td>
-    <td><span class="itc-badge {{ m.det_itc_class }}">{{ m.det_itc }}</span></td>
-    <td class="p-val {{ m.det_sig_class }}">{{ m.det_pval }}</td>
-    <td>{{ m.una_rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.una_count }}</span></td>
-    <td><span class="itc-badge {{ m.una_itc_class }}">{{ m.una_itc }}</span></td>
-    <td class="p-val {{ m.una_sig_class }}">{{ m.una_pval }}</td>
+    <td>{{ m.da.rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.da.count }}</span></td>
+    <td><span class="itc-badge {{ m.da.itc_class }}">{{ m.da.itc }}</span></td>
+    <td class="p-val {{ m.da.sig_class }}">{{ m.da.pval }}</td>
+    <td>{{ m.ua.rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.ua.count }}</span></td>
+    <td><span class="itc-badge {{ m.ua.itc_class }}">{{ m.ua.itc }}</span></td>
+    <td class="p-val {{ m.ua.sig_class }}">{{ m.ua.pval }}</td>
   </tr>
   {% endfor %}
 </table>
 </div>
 
 <div class="card">
-<h3>vs Low-Intent Holdout (n={{ sizes.Holdout_LowIntent | commaformat }}) — More comparable to scrubbed treatment lists</h3>
+<h3>vs Low-Intent Holdout (n={{ sizes.Holdout_LowIntent | commaformat }})</h3>
 <table class="stat-table">
   <tr>
     <th style="text-align:left">Metric</th>
     <th><span class="badge badge-holdout-li">Holdout LI</span></th>
-    <th><span class="badge badge-detach">Detach</span></th>
-    <th>ITC</th>
-    <th>p-value</th>
-    <th><span class="badge badge-unassign">Unassign</span></th>
-    <th>ITC</th>
-    <th>p-value</th>
+    <th><span class="badge badge-detach">Detach (Acted)</span></th>
+    <th>ITC</th><th>p-value</th>
+    <th><span class="badge badge-unassign">Unassign (Acted)</span></th>
+    <th>ITC</th><th>p-value</th>
   </tr>
   {% for m in main_metrics_li %}
   <tr>
     <td style="text-align:left"><strong>{{ m.label }}</strong>{% if m.sublabel %}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.sublabel }}</span>{% endif %}</td>
     <td>{{ m.ctrl_rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.ctrl_count }}</span></td>
-    <td>{{ m.det_rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.det_count }}</span></td>
-    <td><span class="itc-badge {{ m.det_itc_class }}">{{ m.det_itc }}</span></td>
-    <td class="p-val {{ m.det_sig_class }}">{{ m.det_pval }}</td>
-    <td>{{ m.una_rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.una_count }}</span></td>
-    <td><span class="itc-badge {{ m.una_itc_class }}">{{ m.una_itc }}</span></td>
-    <td class="p-val {{ m.una_sig_class }}">{{ m.una_pval }}</td>
+    <td>{{ m.da.rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.da.count }}</span></td>
+    <td><span class="itc-badge {{ m.da.itc_class }}">{{ m.da.itc }}</span></td>
+    <td class="p-val {{ m.da.sig_class }}">{{ m.da.pval }}</td>
+    <td>{{ m.ua.rate }}<br><span class="text-sm" style="color:var(--c-muted)">{{ m.ua.count }}</span></td>
+    <td><span class="itc-badge {{ m.ua.itc_class }}">{{ m.ua.itc }}</span></td>
+    <td class="p-val {{ m.ua.sig_class }}">{{ m.ua.pval }}</td>
   </tr>
   {% endfor %}
 </table>
-<div class="callout-red callout" style="margin-top:16px">
-  <strong>Critical finding:</strong> The low-intent holdout has <strong>{{ states.Holdout_LowIntent.Completed_Filed }}</strong> FS filing(s) and <strong>{{ appts_total.Holdout_LowIntent }}</strong> appointment(s) post-message. {{ li_finding_text }}
-</div>
 </div>
 
 <!-- ── FS FILING WINDOWS ── -->
-<h2>2. FS Filing by Time Window</h2>
+<h2>3. FS Filing by Time Window</h2>
 <div class="grid-2">
 <div class="card">
   <h3>vs Full Holdout</h3>
   <table class="stat-table">
-    <tr><th>Window</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach</span></th><th>ITC</th><th>p</th><th><span class="badge badge-unassign">Unassign</span></th><th>ITC</th><th>p</th></tr>
+    <tr><th>Window</th><th><span class="badge badge-holdout">Holdout</span></th><th><span class="badge badge-detach">Detach Act</span></th><th>ITC</th><th>p</th><th><span class="badge badge-unassign">Unassign Act</span></th><th>ITC</th><th>p</th></tr>
     {% for w in windows_full %}
-    <tr><td>{{ w.label }}</td><td>{{ w.ctrl_rate }}</td><td>{{ w.det_rate }}</td><td><span class="itc-badge {{ w.det_itc_class }}">{{ w.det_itc }}</span></td><td class="{{ w.det_sig_class }}">{{ w.det_pval }}</td><td>{{ w.una_rate }}</td><td><span class="itc-badge {{ w.una_itc_class }}">{{ w.una_itc }}</span></td><td class="{{ w.una_sig_class }}">{{ w.una_pval }}</td></tr>
+    <tr><td>{{ w.label }}</td><td>{{ w.ctrl_rate }}</td><td>{{ w.da_rate }}</td><td><span class="itc-badge {{ w.da_itc_class }}">{{ w.da_itc }}</span></td><td class="{{ w.da_sig_class }}">{{ w.da_pval }}</td><td>{{ w.ua_rate }}</td><td><span class="itc-badge {{ w.ua_itc_class }}">{{ w.ua_itc }}</span></td><td class="{{ w.ua_sig_class }}">{{ w.ua_pval }}</td></tr>
     {% endfor %}
   </table>
-  <p class="text-sm" style="margin-top:8px;color:var(--c-muted)">{{ windows_full_note }}</p>
 </div>
 <div class="card">
   <h3>vs Low-Intent Holdout</h3>
   <table class="stat-table">
-    <tr><th>Window</th><th><span class="badge badge-holdout-li">LI Hold</span></th><th><span class="badge badge-detach">Detach</span></th><th>p</th><th><span class="badge badge-unassign">Unassign</span></th><th>p</th></tr>
+    <tr><th>Window</th><th><span class="badge badge-holdout-li">LI Hold</span></th><th><span class="badge badge-detach">Detach Act</span></th><th>p</th><th><span class="badge badge-unassign">Unassign Act</span></th><th>p</th></tr>
     {% for w in windows_li %}
-    <tr><td>{{ w.label }}</td><td>{{ w.ctrl_rate }}</td><td>{{ w.det_rate }}</td><td class="{{ w.det_sig_class }}">{{ w.det_pval }}</td><td>{{ w.una_rate }}</td><td class="{{ w.una_sig_class }}">{{ w.una_pval }}</td></tr>
+    <tr><td>{{ w.label }}</td><td>{{ w.ctrl_rate }}</td><td>{{ w.da_rate }}</td><td class="{{ w.da_sig_class }}">{{ w.da_pval }}</td><td>{{ w.ua_rate }}</td><td class="{{ w.ua_sig_class }}">{{ w.ua_pval }}</td></tr>
     {% endfor %}
   </table>
-  <p class="text-sm" style="margin-top:8px;color:var(--c-muted)">{{ windows_li_note }}</p>
 </div>
 </div>
 
-<!-- ── FRANCHISE COMPLETION CURVES ── -->
-<h2>3. Cumulative FS Filings — Post Message</h2>
-<div class="grid-2">
-  <div class="card">
-    <h3>Cumulative FS Filings per 1,000 Engagements</h3>
-    <div class="chart-wrap"><canvas id="chartCompCurve"></canvas></div>
-  </div>
-  <div class="card">
-    <h3>Post-Action Filing Windows</h3>
-    <table class="stat-table">
-      <tr><th>Window</th><th><span class="badge badge-detach">Detach</span><br><span class="text-sm">(after 3/24)</span></th><th><span class="badge badge-unassign">Unassign</span><br><span class="text-sm">(after 3/19)</span></th><th>p-value</th></tr>
-      {% for w in post_action_windows %}
-      <tr><td>{{ w.label }}</td><td>{{ w.det_count }} ({{ w.det_per1k }})</td><td>{{ w.una_count }} ({{ w.una_per1k }})</td><td class="{{ w.sig_class }}">{{ w.pval }}</td></tr>
-      {% endfor %}
-    </table>
-    <div class="callout-warn callout" style="margin-top:12px">
-      <strong>Timing gap:</strong> Detach re-run was 3/24 ({{ days_since_detach }} day(s) ago). Unassign was 3/19 ({{ days_since_unassign }} day(s) ago). {{ post_action_note }}
-    </div>
-  </div>
+<!-- ── CUMULATIVE FILINGS CHART ── -->
+<h2>4. Cumulative FS Filings — Post Message</h2>
+<div class="card">
+  <h3>Cumulative FS Filings per 1,000 Engagements</h3>
+  <div class="chart-wrap"><canvas id="chartCompCurve"></canvas></div>
 </div>
 
 <!-- ── ENGAGEMENT STATE ── -->
-<h2>4. Current Engagement State</h2>
+<h2>5. Current Engagement State</h2>
 <div class="grid-2">
   <div class="card">
     <h3>Engagement State Distribution</h3>
@@ -261,19 +335,24 @@
   <div class="card">
     <h3>Detailed Breakdown</h3>
     <table class="stat-table">
-      <tr><th>State</th><th><span class="badge badge-holdout">Full</span></th><th><span class="badge badge-holdout-li">Low Int</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
+      <tr>
+        <th>State</th>
+        <th><span class="badge badge-holdout">Full</span></th>
+        <th><span class="badge badge-holdout-li">LI</span></th>
+        <th><span class="badge badge-detach">Det Act</span></th>
+        <th><span class="badge badge-detach-msg">Det Msg</span></th>
+        <th><span class="badge badge-unassign">Una Act</span></th>
+        <th><span class="badge badge-unassign-msg">Una Msg</span></th>
+      </tr>
       {% for s in state_rows %}
-      <tr><td>{{ s.label }}</td><td>{{ s.full_val }}</td><td>{{ s.li_val }}</td><td>{{ s.det_val }}</td><td>{{ s.una_val }}</td></tr>
+      <tr><td>{{ s.label }}</td><td>{{ s.hf_val }}</td><td>{{ s.hli_val }}</td><td>{{ s.da_val }}</td><td>{{ s.dmo_val }}</td><td>{{ s.ua_val }}</td><td>{{ s.umo_val }}</td></tr>
       {% endfor %}
     </table>
-    <div class="callout-green callout" style="margin-top:12px">
-      <strong>Detach cleared {{ state_pcts.Detach.Completed_Not_Filed }}% to "Completed" status</strong> — the detach action itself closed these engagements. Only {{ state_pcts.Detach.WIP_Expert }}% of detach cohort still has an expert assigned vs {{ state_pcts.Unassign.WIP_Expert }}% for unassign and {{ state_pcts.Holdout_LowIntent.WIP_Expert }}% for low-intent holdout.
-    </div>
   </div>
 </div>
 
 <!-- ── WIP CLEARING ── -->
-<h2>5. WIP Clearing — Off-Queue Rates</h2>
+<h2>6. WIP Clearing — Off-Queue Rates</h2>
 <div class="grid-4">
   <div class="metric-box" style="border-color:var(--c-holdout)">
     <div class="val" style="color:var(--c-holdout)">{{ wip.Holdout_Full.rate_fmt }}</div>
@@ -284,12 +363,12 @@
     <div class="lbl">Low-Intent Holdout<br>{{ wip.Holdout_LowIntent.off_queue | commaformat }} off queue</div>
   </div>
   <div class="metric-box" style="border-color:var(--c-detach)">
-    <div class="val" style="color:var(--c-detach)">{{ wip.Detach.rate_fmt }}</div>
-    <div class="lbl">Detach — ITC {{ wip.Detach.itc }}<br>{{ wip.Detach.pval_label }}</div>
+    <div class="val" style="color:var(--c-detach)">{{ wip.Detach_Acted.rate_fmt }}</div>
+    <div class="lbl">Detach (Acted) — ITC {{ wip.Detach_Acted.itc }}<br>{{ wip.Detach_Acted.pval_label }}</div>
   </div>
   <div class="metric-box" style="border-color:var(--c-unassign)">
-    <div class="val" style="color:var(--c-unassign)">{{ wip.Unassign.rate_fmt }}</div>
-    <div class="lbl">Unassign — ITC {{ wip.Unassign.itc }}<br>{{ wip.Unassign.pval_label }}</div>
+    <div class="val" style="color:var(--c-unassign)">{{ wip.Unassign_Acted.rate_fmt }}</div>
+    <div class="lbl">Unassign (Acted) — ITC {{ wip.Unassign_Acted.itc }}<br>{{ wip.Unassign_Acted.pval_label }}</div>
   </div>
 </div>
 <div class="callout callout-green">
@@ -297,18 +376,26 @@
 </div>
 
 <!-- ── MILESTONE DISTRIBUTION ── -->
-<h2>6. Milestone Distribution</h2>
+<h2>7. Milestone Distribution</h2>
 <div class="card">
   <div class="chart-wrap-tall"><canvas id="chartMilestone"></canvas></div>
 </div>
 
 <!-- ── DIWM RE-ENGAGEMENT ── -->
-<h2>7. DIWM/DIY Re-engagement</h2>
+<h2>8. DIWM/DIY Re-engagement</h2>
 <div class="card">
   <table class="stat-table">
-    <tr><th>Metric</th><th><span class="badge badge-holdout">Full</span></th><th><span class="badge badge-holdout-li">Low Int</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
+    <tr>
+      <th>Metric</th>
+      <th><span class="badge badge-holdout">Full</span></th>
+      <th><span class="badge badge-holdout-li">LI</span></th>
+      <th><span class="badge badge-detach">Det Act</span></th>
+      <th><span class="badge badge-detach-msg">Det Msg</span></th>
+      <th><span class="badge badge-unassign">Una Act</span></th>
+      <th><span class="badge badge-unassign-msg">Una Msg</span></th>
+    </tr>
     {% for d in diwm_rows %}
-    <tr><td>{{ d.label }}</td><td>{{ d.full_val }}</td><td>{{ d.li_val }}</td><td>{{ d.det_val }}</td><td>{{ d.una_val }}</td></tr>
+    <tr><td>{{ d.label }}</td><td>{{ d.hf_val }}</td><td>{{ d.hli_val }}</td><td>{{ d.da_val }}</td><td>{{ d.dmo_val }}</td><td>{{ d.ua_val }}</td><td>{{ d.umo_val }}</td></tr>
     {% endfor %}
   </table>
   <div class="callout" style="margin-top:16px">
@@ -317,33 +404,19 @@
 </div>
 
 <!-- ── APPOINTMENTS POST-MESSAGE ── -->
-<h2>8. Appointment Activity Post-Message</h2>
+<h2>9. Appointment Activity Post-Message</h2>
 <div class="card">
   <h3>Daily First Appointments Handled (per 1,000)</h3>
   <div class="chart-wrap-tall"><canvas id="chartDailyAppts"></canvas></div>
 </div>
 
 <!-- ── INTERPRETATION ── -->
-<h2>9. Statistical Interpretation & Recommendation</h2>
+<h2>10. Interpretation & Recommendation</h2>
 <div class="card">
-  <h3>What the statistics tell us</h3>
-  
-  <p style="margin-bottom:16px"><strong>1. Against the full holdout, treatments show {{ 'no significant lift' if not fs_full_sig else 'a significant lift' }} in FS filing.</strong> Both detach (ITC={{ fs_full_det_itc }}, p={{ fs_full_det_p }}) and unassign (ITC={{ fs_full_una_itc }}, p={{ fs_full_una_p }}) {{ 'produce nearly identical' if not fs_full_sig else 'show different' }} FS filing rates {{ 'to' if not fs_full_sig else 'compared to' }} the holdout.</p>
-  
-  <p style="margin-bottom:16px"><strong>2. Against the low-intent holdout, {{ 'a real signal emerges' if fs_li_sig else 'no signal yet' }}.</strong> The low-intent holdout had <strong>{{ li_filing_count }} FS filing(s)</strong>, while both treatments produced ~{{ treatment_fs_rate }} filing ({{ 'p < 0.001' if fs_li_sig else 'not significant' }}). {{ li_interpretation }}</p>
-  
-  <p style="margin-bottom:16px"><strong>3. Detach is {{ 'the only lever that significantly clears WIP' if wip_det_sig else 'not significantly different on WIP clearing' }}.</strong> Detach's {{ wip.Detach.rate_fmt }} off-queue rate {{ 'is significantly higher than' if wip_det_sig else 'is comparable to' }} holdout ({{ wip.Holdout_Full.rate_fmt }}, {{ wip.Detach.pval_label }}). Unassign's off-queue rate ({{ wip.Unassign.rate_fmt }}) is {{ 'statistically no different from' if not wip_una_sig else 'significantly different from' }} holdout.</p>
-  
-  <p style="margin-bottom:16px"><strong>4. Unassign preserves optionality without clearing WIP.</strong> Unassign shows {{ post_action.Unassign.w_0_7 }} post-action filings in 7 days ({{ post_action_una_per1k }}) vs detach's {{ post_action.Detach.w_0_7 }} ({{ post_action_det_per1k }}). {{ post_action_comparison }}</p>
-  
-  <p style="margin-bottom:16px"><strong>5. {{ diwm_headline }}</strong> {{ diwm_detail }}</p>
-
-  <h3 style="margin-top:28px">Net Assessment</h3>
+  <h3>Net Assessment</h3>
   <div class="callout-green callout">
-    <p><strong>For WIP clearing: Detach wins.</strong> It's the only action that significantly moves engagements off expert queues (ITC={{ wip.Detach.itc }}, {{ wip.Detach.pval_label }}). If the primary objective is protecting expert capacity, detach is the statistically validated lever.</p>
-    <p style="margin-top:12px"><strong>For customer outcomes: {{ customer_outcome_summary }}</strong></p>
-    <p style="margin-top:12px"><strong>{{ diwm_recommendation }}</strong></p>
-    <p style="margin-top:12px"><strong>Recommendation: {{ overall_recommendation }}</strong></p>
+    <p><strong>Customer outcomes:</strong> {{ customer_outcome_summary }}</p>
+    <p style="margin-top:12px"><strong>Recommendation:</strong> {{ overall_recommendation }}</p>
   </div>
 
   <h3 style="margin-top:28px">All Statistical Tests Summary</h3>
@@ -362,7 +435,11 @@
 </div><!-- /container -->
 
 <script>
-const COLORS = { holdout: '#6366f1', holdoutLI: '#a855f7', detach: '#ef4444', unassign: '#22c55e' };
+const COLORS = {
+  holdout: '#6366f1', holdoutLI: '#a855f7',
+  detachAct: '#ef4444', detachMsg: '#fca5a5',
+  unassignAct: '#22c55e', unassignMsg: '#86efac'
+};
 const SIZES = {{ sizes_json }};
 
 const compDaily = {{ comp_daily_json }};
@@ -377,10 +454,12 @@ new Chart(document.getElementById('chartCompCurve'), {
   data: {
     labels: daysArr,
     datasets: [
-      { label: 'Holdout Full', data: buildCumPer1K(compDaily.Holdout_Full, SIZES.Holdout_Full), borderColor: COLORS.holdout, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Holdout Low-Intent ({{ li_filing_count }} filings)', data: daysArr.map(() => {{ li_cum_per1k }}), borderColor: COLORS.holdoutLI, borderDash: [5,5], borderWidth: 2, fill: false, tension: 0, pointRadius: 5, pointStyle: 'crossRot', pointBorderWidth: 2 },
-      { label: 'Detach', data: buildCumPer1K(compDaily.Detach, SIZES.Detach), borderColor: COLORS.detach, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Unassign', data: buildCumPer1K(compDaily.Unassign, SIZES.Unassign), borderColor: COLORS.unassign, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Holdout Full', data: buildCumPer1K(compDaily.Holdout_Full || {}, SIZES.Holdout_Full), borderColor: COLORS.holdout, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Holdout Low-Intent ({{ li_filing_count }} filings)', data: daysArr.map(() => {{ li_cum_per1k }}), borderColor: COLORS.holdoutLI, borderDash: [5,5], borderWidth: 2, fill: false, tension: 0, pointRadius: 0 },
+      { label: 'Detach (Acted)', data: buildCumPer1K(compDaily.Detach_Acted || {}, SIZES.Detach_Acted), borderColor: COLORS.detachAct, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Detach (Msg Only)', data: buildCumPer1K(compDaily.Detach_MsgOnly || {}, SIZES.Detach_MsgOnly), borderColor: COLORS.detachMsg, borderDash: [4,4], fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
+      { label: 'Unassign (Acted)', data: buildCumPer1K(compDaily.Unassign_Acted || {}, SIZES.Unassign_Acted), borderColor: COLORS.unassignAct, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Unassign (Msg Only)', data: buildCumPer1K(compDaily.Unassign_MsgOnly || {}, SIZES.Unassign_MsgOnly), borderColor: COLORS.unassignMsg, borderDash: [4,4], fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
     ]
   },
   options: {
@@ -388,32 +467,22 @@ new Chart(document.getElementById('chartCompCurve'), {
     scales: {
       x: { title: { display: true, text: 'Days after message sent (3/10)' }},
       y: { title: { display: true, text: 'Cumulative FS filings per 1,000' }, beginAtZero: true }
-    },
-    plugins: {
-      tooltip: {
-        callbacks: {
-          label: function(ctx) {
-            if (ctx.dataset.label.includes('Low-Intent') && ctx.raw === 0) {
-              return 'Holdout Low-Intent: 0 filings (zero baseline)';
-            }
-            return ctx.dataset.label + ': ' + ctx.formattedValue;
-          }
-        }
-      }
     }
   }
 });
 
 const stateData = {{ state_data_json }};
+const stateLabels = ['Holdout Full', 'Holdout LI', 'Detach Act', 'Det Msg', 'Unassign Act', 'Una Msg'];
+const stateCohorts = ['Holdout_Full', 'Holdout_LowIntent', 'Detach_Acted', 'Detach_MsgOnly', 'Unassign_Acted', 'Unassign_MsgOnly'];
 new Chart(document.getElementById('chartState'), {
   type: 'bar',
   data: {
-    labels: ['Holdout Full', 'Holdout LI', 'Detach', 'Unassign'],
+    labels: stateLabels,
     datasets: [
-      { label: 'WIP w/ Expert', data: [stateData.Holdout_Full[0], stateData.Holdout_LowIntent[0], stateData.Detach[0], stateData.Unassign[0]], backgroundColor: '#94a3b8' },
-      { label: 'WIP No Expert', data: [stateData.Holdout_Full[1], stateData.Holdout_LowIntent[1], stateData.Detach[1], stateData.Unassign[1]], backgroundColor: '#fbbf24' },
-      { label: 'Completed Filed', data: [stateData.Holdout_Full[2], stateData.Holdout_LowIntent[2], stateData.Detach[2], stateData.Unassign[2]], backgroundColor: '#4ade80' },
-      { label: 'Completed Not Filed', data: [stateData.Holdout_Full[3], stateData.Holdout_LowIntent[3], stateData.Detach[3], stateData.Unassign[3]], backgroundColor: '#fb923c' }
+      { label: 'WIP w/ Expert', data: stateCohorts.map(c => (stateData[c]||[0])[0]), backgroundColor: '#94a3b8' },
+      { label: 'WIP No Expert', data: stateCohorts.map(c => (stateData[c]||[0,0])[1]), backgroundColor: '#fbbf24' },
+      { label: 'Completed Filed', data: stateCohorts.map(c => (stateData[c]||[0,0,0])[2]), backgroundColor: '#4ade80' },
+      { label: 'Completed Not Filed', data: stateCohorts.map(c => (stateData[c]||[0,0,0,0])[3]), backgroundColor: '#fb923c' }
     ]
   },
   options: {
@@ -426,21 +495,17 @@ new Chart(document.getElementById('chartState'), {
 
 const msCounts = {{ ms_counts_json }};
 const milestones = {{ milestones_list_json }};
-const msData = {};
-['Holdout_Full','Holdout_LowIntent','Detach','Unassign'].forEach(c => {
-  msData[c] = {};
-  milestones.forEach(m => { msData[c][m] = ((msCounts[c]||{})[m]||0) / SIZES[c] * 100; });
-});
+const msColors = [COLORS.holdout+'bb', COLORS.holdoutLI+'bb', COLORS.detachAct+'bb', COLORS.detachMsg+'66', COLORS.unassignAct+'bb', COLORS.unassignMsg+'66'];
+const msLabels = ['Holdout Full', 'Holdout LI', 'Detach Act', 'Det Msg', 'Unassign Act', 'Una Msg'];
 new Chart(document.getElementById('chartMilestone'), {
   type: 'bar',
   data: {
     labels: milestones,
-    datasets: [
-      { label: 'Holdout Full', data: milestones.map(m => msData.Holdout_Full[m].toFixed(1)), backgroundColor: COLORS.holdout+'bb' },
-      { label: 'Holdout LI', data: milestones.map(m => msData.Holdout_LowIntent[m].toFixed(1)), backgroundColor: COLORS.holdoutLI+'bb' },
-      { label: 'Detach', data: milestones.map(m => msData.Detach[m].toFixed(1)), backgroundColor: COLORS.detach+'bb' },
-      { label: 'Unassign', data: milestones.map(m => msData.Unassign[m].toFixed(1)), backgroundColor: COLORS.unassign+'bb' }
-    ]
+    datasets: stateCohorts.map((c, i) => ({
+      label: msLabels[i],
+      data: milestones.map(m => (((msCounts[c]||{})[m]||0) / SIZES[c] * 100).toFixed(1)),
+      backgroundColor: msColors[i]
+    }))
   },
   options: {
     responsive: true, maintainAspectRatio: false,
@@ -456,9 +521,9 @@ new Chart(document.getElementById('chartDailyAppts'), {
   data: {
     labels: apptDays,
     datasets: [
-      { label: 'Holdout Full', data: apptDays.map(i => +((apptDaily.Holdout_Full[i]||0)*1000/SIZES.Holdout_Full).toFixed(2)), backgroundColor: COLORS.holdout+'99' },
-      { label: 'Detach', data: apptDays.map(i => +((apptDaily.Detach[i]||0)*1000/SIZES.Detach).toFixed(2)), backgroundColor: COLORS.detach+'99' },
-      { label: 'Unassign', data: apptDays.map(i => +((apptDaily.Unassign[i]||0)*1000/SIZES.Unassign).toFixed(2)), backgroundColor: COLORS.unassign+'99' }
+      { label: 'Holdout Full', data: apptDays.map(i => +((apptDaily.Holdout_Full||{})[i]||0)*1000/SIZES.Holdout_Full).toFixed ? apptDays.map(i => +(((apptDaily.Holdout_Full||{})[i]||0)*1000/SIZES.Holdout_Full).toFixed(2)) : [], backgroundColor: COLORS.holdout+'99' },
+      { label: 'Detach (Acted)', data: apptDays.map(i => +(((apptDaily.Detach_Acted||{})[i]||0)*1000/SIZES.Detach_Acted).toFixed(2)), backgroundColor: COLORS.detachAct+'99' },
+      { label: 'Unassign (Acted)', data: apptDays.map(i => +(((apptDaily.Unassign_Acted||{})[i]||0)*1000/SIZES.Unassign_Acted).toFixed(2)), backgroundColor: COLORS.unassignAct+'99' }
     ]
   },
   options: {
