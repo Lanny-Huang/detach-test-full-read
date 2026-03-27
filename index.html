@@ -66,7 +66,7 @@
 <div class="container">
 
 <h1>FS WIP Detach / Unassign Test — Statistical Analysis</h1>
-<p class="subtitle">Dual holdout comparison with ITC &amp; p-values | List Pull 3/9 | Messages 3/10 | Scrub 3/17 | Unassigned 3/19 | Detach Failed 3/20 | Detach Re-run 3/24 | Data as of 3/26</p>
+<p class="subtitle">Dual holdout comparison with ITC &amp; p-values | List Pull 3/9 | Messages 3/10 | Scrub 3/17 | Unassigned 3/19 | Detach Failed 3/20 | Detach Re-run 3/24 | Data as of 3/27</p>
 
 <!-- ── TIMELINE ── -->
 <h2>Test Timeline</h2>
@@ -110,7 +110,7 @@
       <div style="font-size:10px;color:#64748b;margin-top:4px">Detach<br>Re-run</div>
     </div>
     <div style="position:absolute;left:100%;top:12px;text-align:center;transform:translateX(-100%)">
-      <div style="font-size:11px;font-weight:700;color:#64748b">3/26</div>
+      <div style="font-size:11px;font-weight:700;color:#64748b">3/27</div>
       <div style="width:2px;height:14px;background:#94a3b8;margin:2px auto"></div>
       <div style="width:10px;height:10px;background:#94a3b8;border-radius:50%;margin:0 auto"></div>
       <div style="font-size:10px;color:#64748b;margin-top:4px">This<br>Read</div>
@@ -162,46 +162,46 @@
   
   <tr>
     <td style="text-align:left"><strong>FS Filing Rate</strong></td>
-    <td>0.9%<br><span class="text-sm" style="color:var(--c-muted)">20/2,344</span></td>
-    <td>0.6%<br><span class="text-sm" style="color:var(--c-muted)">102/17,753</span></td>
-    <td><span class="itc-badge itc-down">67</span></td>
-    <td class="p-val not-sig">0.103</td>
-    <td>0.6%<br><span class="text-sm" style="color:var(--c-muted)">107/17,758</span></td>
-    <td><span class="itc-badge itc-down">71</span></td>
-    <td class="p-val not-sig">0.150</td>
+    <td>1%<br><span class="text-sm" style="color:var(--c-muted)">24/2,344</span></td>
+    <td>0.6%<br><span class="text-sm" style="color:var(--c-muted)">107/17,753</span></td>
+    <td><span class="itc-badge itc-down">59</span></td>
+    <td class="p-val sig">0.017 *</td>
+    <td>0.7%<br><span class="text-sm" style="color:var(--c-muted)">118/17,758</span></td>
+    <td><span class="itc-badge itc-down">65</span></td>
+    <td class="p-val not-sig">0.051</td>
   </tr>
   
   <tr>
     <td style="text-align:left"><strong>WIP Clearing (off-queue)</strong></td>
-    <td>5%<br><span class="text-sm" style="color:var(--c-muted)">126/2,344</span></td>
-    <td>40%<br><span class="text-sm" style="color:var(--c-muted)">7,110/17,753</span></td>
-    <td><span class="itc-badge itc-up">745</span></td>
+    <td>6%<br><span class="text-sm" style="color:var(--c-muted)">137/2,344</span></td>
+    <td>40%<br><span class="text-sm" style="color:var(--c-muted)">7,158/17,753</span></td>
+    <td><span class="itc-badge itc-up">690</span></td>
     <td class="p-val sig">< 0.001 ***</td>
-    <td>4%<br><span class="text-sm" style="color:var(--c-muted)">624/17,758</span></td>
+    <td>4%<br><span class="text-sm" style="color:var(--c-muted)">673/17,758</span></td>
     <td><span class="itc-badge itc-down">65</span></td>
     <td class="p-val sig">< 0.001 ***</td>
   </tr>
   
   <tr>
     <td style="text-align:left"><strong>Completed Not Filed</strong><br><span class="text-sm" style="color:var(--c-muted)">(system closures)</span></td>
-    <td>4%<br><span class="text-sm" style="color:var(--c-muted)">104/2,344</span></td>
-    <td>39%<br><span class="text-sm" style="color:var(--c-muted)">7,010/17,753</span></td>
-    <td><span class="itc-badge itc-up">890</span></td>
+    <td>5%<br><span class="text-sm" style="color:var(--c-muted)">111/2,344</span></td>
+    <td>40%<br><span class="text-sm" style="color:var(--c-muted)">7,052/17,753</span></td>
+    <td><span class="itc-badge itc-up">839</span></td>
     <td class="p-val sig">< 0.001 ***</td>
-    <td>3%<br><span class="text-sm" style="color:var(--c-muted)">517/17,758</span></td>
+    <td>3%<br><span class="text-sm" style="color:var(--c-muted)">556/17,758</span></td>
     <td><span class="itc-badge itc-down">66</span></td>
     <td class="p-val sig">< 0.001 ***</td>
   </tr>
   
   <tr>
     <td style="text-align:left"><strong>Appt Handled Post-Msg</strong></td>
-    <td>1%<br><span class="text-sm" style="color:var(--c-muted)">33/2,344</span></td>
-    <td>0.8%<br><span class="text-sm" style="color:var(--c-muted)">149/17,753</span></td>
-    <td><span class="itc-badge itc-down">60</span></td>
-    <td class="p-val sig">0.006 **</td>
-    <td>0.9%<br><span class="text-sm" style="color:var(--c-muted)">167/17,758</span></td>
-    <td><span class="itc-badge itc-down">67</span></td>
-    <td class="p-val sig">0.032 *</td>
+    <td>1%<br><span class="text-sm" style="color:var(--c-muted)">35/2,344</span></td>
+    <td>0.9%<br><span class="text-sm" style="color:var(--c-muted)">157/17,753</span></td>
+    <td><span class="itc-badge itc-down">59</span></td>
+    <td class="p-val sig">0.004 **</td>
+    <td>1%<br><span class="text-sm" style="color:var(--c-muted)">184/17,758</span></td>
+    <td><span class="itc-badge itc-down">69</span></td>
+    <td class="p-val sig">0.045 *</td>
   </tr>
   
 </table>
@@ -224,10 +224,10 @@
   <tr>
     <td style="text-align:left"><strong>FS Filing Rate</strong></td>
     <td>0.0%<br><span class="text-sm" style="color:var(--c-muted)">0/1,602</span></td>
-    <td>0.6%<br><span class="text-sm" style="color:var(--c-muted)">102/17,753</span></td>
+    <td>0.6%<br><span class="text-sm" style="color:var(--c-muted)">107/17,753</span></td>
     <td><span class="itc-badge itc-up">∞</span></td>
     <td class="p-val sig">< 0.001 ***</td>
-    <td>0.6%<br><span class="text-sm" style="color:var(--c-muted)">107/17,758</span></td>
+    <td>0.7%<br><span class="text-sm" style="color:var(--c-muted)">118/17,758</span></td>
     <td><span class="itc-badge itc-up">∞</span></td>
     <td class="p-val sig">< 0.001 ***</td>
   </tr>
@@ -235,39 +235,39 @@
   <tr>
     <td style="text-align:left"><strong>WIP Clearing (off-queue)</strong></td>
     <td>0.4%<br><span class="text-sm" style="color:var(--c-muted)">7/1,602</span></td>
-    <td>40%<br><span class="text-sm" style="color:var(--c-muted)">7,110/17,753</span></td>
-    <td><span class="itc-badge itc-up">9166</span></td>
+    <td>40%<br><span class="text-sm" style="color:var(--c-muted)">7,158/17,753</span></td>
+    <td><span class="itc-badge itc-up">9228</span></td>
     <td class="p-val sig">< 0.001 ***</td>
-    <td>4%<br><span class="text-sm" style="color:var(--c-muted)">624/17,758</span></td>
-    <td><span class="itc-badge itc-up">804</span></td>
+    <td>4%<br><span class="text-sm" style="color:var(--c-muted)">673/17,758</span></td>
+    <td><span class="itc-badge itc-up">867</span></td>
     <td class="p-val sig">< 0.001 ***</td>
   </tr>
   
   <tr>
     <td style="text-align:left"><strong>Completed Not Filed</strong><br><span class="text-sm" style="color:var(--c-muted)">(system closures)</span></td>
     <td>0.4%<br><span class="text-sm" style="color:var(--c-muted)">7/1,602</span></td>
-    <td>39%<br><span class="text-sm" style="color:var(--c-muted)">7,010/17,753</span></td>
-    <td><span class="itc-badge itc-up">9037</span></td>
+    <td>40%<br><span class="text-sm" style="color:var(--c-muted)">7,052/17,753</span></td>
+    <td><span class="itc-badge itc-up">9091</span></td>
     <td class="p-val sig">< 0.001 ***</td>
-    <td>3%<br><span class="text-sm" style="color:var(--c-muted)">517/17,758</span></td>
-    <td><span class="itc-badge itc-up">666</span></td>
+    <td>3%<br><span class="text-sm" style="color:var(--c-muted)">556/17,758</span></td>
+    <td><span class="itc-badge itc-up">717</span></td>
     <td class="p-val sig">< 0.001 ***</td>
   </tr>
   
   <tr>
     <td style="text-align:left"><strong>Appt Handled Post-Msg</strong></td>
-    <td>0.0%<br><span class="text-sm" style="color:var(--c-muted)">0/1,602</span></td>
-    <td>0.8%<br><span class="text-sm" style="color:var(--c-muted)">149/17,753</span></td>
-    <td><span class="itc-badge itc-up">∞</span></td>
+    <td>0.1%<br><span class="text-sm" style="color:var(--c-muted)">1/1,602</span></td>
+    <td>0.9%<br><span class="text-sm" style="color:var(--c-muted)">157/17,753</span></td>
+    <td><span class="itc-badge itc-up">1417</span></td>
     <td class="p-val sig">< 0.001 ***</td>
-    <td>0.9%<br><span class="text-sm" style="color:var(--c-muted)">167/17,758</span></td>
-    <td><span class="itc-badge itc-up">∞</span></td>
+    <td>1%<br><span class="text-sm" style="color:var(--c-muted)">184/17,758</span></td>
+    <td><span class="itc-badge itc-up">1660</span></td>
     <td class="p-val sig">< 0.001 ***</td>
   </tr>
   
 </table>
 <div class="callout-red callout" style="margin-top:16px">
-  <strong>Critical finding:</strong> The low-intent holdout has <strong>0</strong> FS filing(s) and <strong></strong> appointment(s) post-message. Against this baseline, both treatments show statistically significant lifts (p < 0.001). This suggests the messaging + action did activate some behavior in customers who would otherwise have remained completely dormant. However, the absolute magnitude remains small (~0.6% FS filing rate).
+  <strong>Critical finding:</strong> The low-intent holdout has <strong>0</strong> FS filing(s) and <strong>1</strong> appointment(s) post-message. Low-intent holdout shows 0 filing(s) and 1 appointment(s) post-message.
 </div>
 </div>
 
@@ -287,7 +287,7 @@
     
     <tr><td>0–10 days</td><td>0.8%</td><td>0.3%</td><td><span class="itc-badge itc-down">45</span></td><td class="sig">0.002 **</td><td>0.4%</td><td><span class="itc-badge itc-down">56</span></td><td class="sig">0.023 *</td></tr>
     
-    <tr><td>0–15 days</td><td>0.9%</td><td>0.6%</td><td><span class="itc-badge itc-down">67</span></td><td class="not-sig">0.10</td><td>0.6%</td><td><span class="itc-badge itc-down">71</span></td><td class="not-sig">0.15</td></tr>
+    <tr><td>0–15 days</td><td>1%</td><td>0.6%</td><td><span class="itc-badge itc-down">59</span></td><td class="sig">0.017 *</td><td>0.7%</td><td><span class="itc-badge itc-down">65</span></td><td class="not-sig">0.05</td></tr>
     
   </table>
   <p class="text-sm" style="margin-top:8px;color:var(--c-muted)">Some windows show significant differences.</p>
@@ -305,7 +305,7 @@
     
     <tr><td>0–10 days</td><td>0.0%</td><td>0.3%</td><td class="sig">0.009 **</td><td>0.4%</td><td class="sig">0.003 **</td></tr>
     
-    <tr><td>0–15 days</td><td>0.0%</td><td>0.6%</td><td class="sig">< 0.001 ***</td><td>0.6%</td><td class="sig">< 0.001 ***</td></tr>
+    <tr><td>0–15 days</td><td>0.0%</td><td>0.6%</td><td class="sig">< 0.001 ***</td><td>0.7%</td><td class="sig">< 0.001 ***</td></tr>
     
   </table>
   <p class="text-sm" style="margin-top:8px;color:var(--c-muted)">Low-intent holdout = 0 filing(s). Significance emerges in later windows.</p>
@@ -324,17 +324,17 @@
     <table class="stat-table">
       <tr><th>Window</th><th><span class="badge badge-detach">Detach</span><br><span class="text-sm">(after 3/24)</span></th><th><span class="badge badge-unassign">Unassign</span><br><span class="text-sm">(after 3/19)</span></th><th>p-value</th></tr>
       
-      <tr><td>0–1 day</td><td>22 (1/1K)</td><td>19 (1/1K)</td><td class="not-sig">0.64</td></tr>
+      <tr><td>0–1 day</td><td>25 (1/1K)</td><td>19 (1/1K)</td><td class="not-sig">0.36</td></tr>
       
-      <tr><td>0–3 days</td><td>22 (1/1K)</td><td>46 (3/1K)</td><td class="sig">0.004 **</td></tr>
+      <tr><td>0–3 days</td><td>28 (2/1K)</td><td>46 (3/1K)</td><td class="sig">0.036 *</td></tr>
       
-      <tr><td>0–5 days</td><td>22 (1/1K)</td><td>59 (3/1K)</td><td class="sig">< 0.001 ***</td></tr>
+      <tr><td>0–5 days</td><td>28 (2/1K)</td><td>59 (3/1K)</td><td class="sig">< 0.001 ***</td></tr>
       
-      <tr><td>0–7 days</td><td>22 (1/1K)</td><td>69 (4/1K)</td><td class="sig">< 0.001 ***</td></tr>
+      <tr><td>0–7 days</td><td>28 (2/1K)</td><td>83 (5/1K)</td><td class="sig">< 0.001 ***</td></tr>
       
     </table>
     <div class="callout-warn callout" style="margin-top:12px">
-      <strong>Timing gap:</strong> Detach re-run was 3/24 (2 day(s) ago). Unassign was 3/19 (7 day(s) ago). Detach's 22 filing(s) in day 1 is comparable to unassign's 19 at the same time mark. The divergence at 5+ days reflects unassign's longer observation window (7 days vs 2), not necessarily better performance.
+      <strong>Timing gap:</strong> Detach re-run was 3/24 (3 day(s) ago). Unassign was 3/19 (8 day(s) ago). Detach's 25 filing(s) in day 1 is comparable to unassign's 19 at the same time mark. The divergence at 5+ days reflects unassign's longer observation window (8 days vs 3), not necessarily better performance.
     </div>
   </div>
 </div>
@@ -351,17 +351,17 @@
     <table class="stat-table">
       <tr><th>State</th><th><span class="badge badge-holdout">Full</span></th><th><span class="badge badge-holdout-li">Low Int</span></th><th><span class="badge badge-detach">Detach</span></th><th><span class="badge badge-unassign">Unassign</span></th></tr>
       
-      <tr><td>WIP w/ Expert</td><td>2,138 (91%)</td><td>1,572 (98%)</td><td>10,380 (58%)</td><td>16,745 (94%)</td></tr>
+      <tr><td>WIP w/ Expert</td><td>2,127 (91%)</td><td>1,572 (98%)</td><td>10,332 (58%)</td><td>16,697 (94%)</td></tr>
       
-      <tr><td>WIP No Expert</td><td>80 (3%)</td><td>23 (1%)</td><td>263 (1%)</td><td>389 (2%)</td></tr>
+      <tr><td>WIP No Expert</td><td>80 (3%)</td><td>23 (1%)</td><td>263 (1%)</td><td>388 (2%)</td></tr>
       
-      <tr><td>Completed — Filed</td><td>22 (0.9%)</td><td>0 (0.0%)</td><td>100 (0.6%)</td><td>107 (0.6%)</td></tr>
+      <tr><td>Completed — Filed</td><td>26 (1%)</td><td>0 (0.0%)</td><td>106 (0.6%)</td><td>117 (0.7%)</td></tr>
       
-      <tr><td>Completed — Not Filed</td><td>104 (4%)</td><td>7 (0.4%)</td><td>7,010 (39%)</td><td>517 (3%)</td></tr>
+      <tr><td>Completed — Not Filed</td><td>111 (5%)</td><td>7 (0.4%)</td><td>7,052 (40%)</td><td>556 (3%)</td></tr>
       
     </table>
     <div class="callout-green callout" style="margin-top:12px">
-      <strong>Detach cleared 39% to "Completed" status</strong> — the detach action itself closed these engagements. Only 58% of detach cohort still has an expert assigned vs 94% for unassign and 98% for low-intent holdout.
+      <strong>Detach cleared 40% to "Completed" status</strong> — the detach action itself closed these engagements. Only 58% of detach cohort still has an expert assigned vs 94% for unassign and 98% for low-intent holdout.
     </div>
   </div>
 </div>
@@ -370,8 +370,8 @@
 <h2>5. WIP Clearing — Off-Queue Rates</h2>
 <div class="grid-4">
   <div class="metric-box" style="border-color:var(--c-holdout)">
-    <div class="val" style="color:var(--c-holdout)">5%</div>
-    <div class="lbl">Full Holdout<br>126 off queue</div>
+    <div class="val" style="color:var(--c-holdout)">6%</div>
+    <div class="lbl">Full Holdout<br>137 off queue</div>
   </div>
   <div class="metric-box" style="border-color:var(--c-holdout-li)">
     <div class="val" style="color:var(--c-holdout-li)">0.4%</div>
@@ -379,7 +379,7 @@
   </div>
   <div class="metric-box" style="border-color:var(--c-detach)">
     <div class="val" style="color:var(--c-detach)">40%</div>
-    <div class="lbl">Detach — ITC 745<br>p < 0.001 ***</div>
+    <div class="lbl">Detach — ITC 690<br>p < 0.001 ***</div>
   </div>
   <div class="metric-box" style="border-color:var(--c-unassign)">
     <div class="val" style="color:var(--c-unassign)">4%</div>
@@ -387,7 +387,7 @@
   </div>
 </div>
 <div class="callout callout-green">
-  <strong>Detach significantly outperforms on WIP clearing</strong> (40% vs 5%, ITC=745, p < 0.001 ***). This is expected since detach system-closes engagements. Unassign's WIP clearing (4%) is significantly different from holdout — unassign alone doesn't move engagements off queue; it only removes the expert.
+  <strong>Detach significantly outperforms on WIP clearing</strong> (40% vs 6%, ITC=690, p < 0.001 ***). This is expected since detach system-closes engagements. Unassign's WIP clearing (4%) is significantly different from holdout — unassign alone doesn't move engagements off queue; it only removes the expert.
 </div>
 
 <!-- ── MILESTONE DISTRIBUTION ── -->
@@ -430,20 +430,20 @@
 <div class="card">
   <h3>What the statistics tell us</h3>
   
-  <p style="margin-bottom:16px"><strong>1. Against the full holdout, treatments show no significant lift in FS filing.</strong> Both detach (ITC=67, p=0.103) and unassign (ITC=71, p=0.150) produce nearly identical FS filing rates to the holdout.</p>
+  <p style="margin-bottom:16px"><strong>1. Against the full holdout, treatments show a significant lift in FS filing.</strong> Both detach (ITC=59, p=0.017 *) and unassign (ITC=65, p=0.051) show different FS filing rates compared to the holdout.</p>
   
   <p style="margin-bottom:16px"><strong>2. Against the low-intent holdout, a real signal emerges.</strong> The low-intent holdout had <strong>0 FS filing(s)</strong>, while both treatments produced ~0.6% filing (p < 0.001). This suggests the messaging + intervention activated some behavior in what would have been fully dormant customers. However, the absolute lift is small.</p>
   
-  <p style="margin-bottom:16px"><strong>3. Detach is the only lever that significantly clears WIP.</strong> Detach's 40% off-queue rate is significantly higher than holdout (5%, p < 0.001 ***). Unassign's off-queue rate (4%) is significantly different from holdout.</p>
+  <p style="margin-bottom:16px"><strong>3. Detach is the only lever that significantly clears WIP.</strong> Detach's 40% off-queue rate is significantly higher than holdout (6%, p < 0.001 ***). Unassign's off-queue rate (4%) is significantly different from holdout.</p>
   
-  <p style="margin-bottom:16px"><strong>4. Unassign preserves optionality without clearing WIP.</strong> Unassign shows 69 post-action filings in 7 days (4/1K) vs detach's 22 (1/1K). On a per-day basis, these are comparable. But unassigned engagements remain 'WIP' with expert removed — this doesn't actually free up the engagement slot.</p>
+  <p style="margin-bottom:16px"><strong>4. Unassign preserves optionality without clearing WIP.</strong> Unassign shows 83 post-action filings in 7 days (5/1K) vs detach's 28 (2/1K). On a per-day basis, these are comparable. But unassigned engagements remain 'WIP' with expert removed — this doesn't actually free up the engagement slot.</p>
   
   <p style="margin-bottom:16px"><strong>5. Zero DIWM/DIY re-engagement across all cohorts.</strong> Detach's theoretical advantage — redirecting customers to self-file — has produced zero conversions. No new DIWM/DIY starts post-message in any group.</p>
 
   <h3 style="margin-top:28px">Net Assessment</h3>
   <div class="callout-green callout">
-    <p><strong>For WIP clearing: Detach wins.</strong> It's the only action that significantly moves engagements off expert queues (ITC=745, p < 0.001 ***). If the primary objective is protecting expert capacity, detach is the statistically validated lever.</p>
-    <p style="margin-top:12px"><strong>For customer outcomes: No significant difference. Neither treatment meaningfully improves FS filing or franchise completion vs holdout.</strong></p>
+    <p><strong>For WIP clearing: Detach wins.</strong> It's the only action that significantly moves engagements off expert queues (ITC=690, p < 0.001 ***). If the primary objective is protecting expert capacity, detach is the statistically validated lever.</p>
+    <p style="margin-top:12px"><strong>For customer outcomes: Some significant differences detected. Review the detailed tables.</strong></p>
     <p style="margin-top:12px"><strong>Detach's DIWM upside remains unproven. Zero post-message DIWM starts is a strong null signal.</strong></p>
     <p style="margin-top:12px"><strong>Recommendation: Detach for immediate WIP clearing if that's the operational priority. Re-read at day 7 post-detach (by 3/31) to check for DIWM emergence. If none, detach's only advantage over unassign is the system-closure, with no customer outcome benefit.</strong></p>
   </div>
@@ -454,42 +454,42 @@
       <th>Metric</th><th>Treatment</th><th>Control</th><th>Treat Rate</th><th>Ctrl Rate</th><th>ITC</th><th>p-value</th><th>Test</th><th>Sig?</th>
     </tr>
     
-    <tr><td>FS Filing</td><td>Detach</td><td>Full</td><td>0.6%</td><td>0.9%</td><td>67</td><td>0.103</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr style="background:#fef2f2"><td>FS Filing</td><td>Detach</td><td>Full</td><td>0.6%</td><td>1%</td><td>59</td><td>0.017</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr><td>FS Filing</td><td>Unassign</td><td>Full</td><td>0.6%</td><td>0.9%</td><td>71</td><td>0.150</td><td>Chi²</td><td class="not-sig">—</td></tr>
+    <tr><td>FS Filing</td><td>Unassign</td><td>Full</td><td>0.7%</td><td>1%</td><td>65</td><td>0.051</td><td>Chi²</td><td class="not-sig">—</td></tr>
     
     <tr style="background:#fef2f2"><td>FS Filing</td><td>Detach</td><td>Low Int</td><td>0.6%</td><td>0.0%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>FS Filing</td><td>Unassign</td><td>Low Int</td><td>0.6%</td><td>0.0%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>FS Filing</td><td>Unassign</td><td>Low Int</td><td>0.7%</td><td>0.0%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Detach</td><td>Full</td><td>40%</td><td>5%</td><td>745</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Detach</td><td>Full</td><td>40%</td><td>6%</td><td>690</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Unassign</td><td>Full</td><td>4%</td><td>5%</td><td>65</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Unassign</td><td>Full</td><td>4%</td><td>6%</td><td>65</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Detach</td><td>Low Int</td><td>40%</td><td>0.4%</td><td>9166</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Detach</td><td>Low Int</td><td>40%</td><td>0.4%</td><td>9228</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Unassign</td><td>Low Int</td><td>4%</td><td>0.4%</td><td>804</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>WIP Clearing</td><td>Unassign</td><td>Low Int</td><td>4%</td><td>0.4%</td><td>867</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Detach</td><td>Full</td><td>39%</td><td>4%</td><td>890</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Detach</td><td>Full</td><td>40%</td><td>5%</td><td>839</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Unassign</td><td>Full</td><td>3%</td><td>4%</td><td>66</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Unassign</td><td>Full</td><td>3%</td><td>5%</td><td>66</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Detach</td><td>Low Int</td><td>39%</td><td>0.4%</td><td>9037</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Detach</td><td>Low Int</td><td>40%</td><td>0.4%</td><td>9091</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Unassign</td><td>Low Int</td><td>3%</td><td>0.4%</td><td>666</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Comp Not Filed</td><td>Unassign</td><td>Low Int</td><td>3%</td><td>0.4%</td><td>717</td><td><0.001</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Detach</td><td>Full</td><td>0.8%</td><td>1%</td><td>60</td><td>0.006</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Detach</td><td>Full</td><td>0.9%</td><td>1%</td><td>59</td><td>0.004</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Unassign</td><td>Full</td><td>0.9%</td><td>1%</td><td>67</td><td>0.032</td><td>Chi²</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Unassign</td><td>Full</td><td>1%</td><td>1%</td><td>69</td><td>0.045</td><td>Chi²</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Detach</td><td>Low Int</td><td>0.8%</td><td>0.0%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Detach</td><td>Low Int</td><td>0.9%</td><td>0.1%</td><td>1417</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
     
-    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Unassign</td><td>Low Int</td><td>0.9%</td><td>0.0%</td><td>∞</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
+    <tr style="background:#fef2f2"><td>Appt Post-Msg</td><td>Unassign</td><td>Low Int</td><td>1%</td><td>0.1%</td><td>1660</td><td><0.001</td><td>Fisher</td><td class="sig">***</td></tr>
     
   </table>
 </div>
 
-<p class="auto-updated">Auto-refreshed 2026-03-26 17:46 PT</p>
+<p class="auto-updated">Auto-refreshed 2026-03-27 09:21 PT</p>
 
 </div><!-- /container -->
 
@@ -497,13 +497,13 @@
 const COLORS = { holdout: '#6366f1', holdoutLI: '#a855f7', detach: '#ef4444', unassign: '#22c55e' };
 const SIZES = {"Holdout_Full": 2344, "Holdout_LowIntent": 1602, "Detach": 17753, "Unassign": 17758};
 
-const compDaily = {"Detach": {"0": 4, "1": 2, "2": 2, "3": 5, "4": 4, "5": 7, "6": 8, "7": 8, "8": 10, "9": 4, "10": 7, "11": 9, "12": 6, "13": 9, "14": 10, "15": 7}, "Holdout_Full": {"1": 1, "3": 1, "4": 2, "5": 1, "6": 2, "7": 6, "8": 2, "9": 2, "10": 1, "13": 1, "15": 1}, "Unassign": {"0": 2, "1": 4, "2": 3, "3": 5, "4": 6, "5": 12, "6": 3, "7": 13, "8": 12, "9": 10, "10": 6, "11": 7, "12": 6, "13": 8, "14": 2, "15": 8}};
+const compDaily = {"Detach": {"0": 4, "1": 2, "2": 2, "3": 5, "4": 4, "5": 7, "6": 8, "7": 8, "8": 10, "9": 4, "10": 7, "11": 9, "12": 6, "13": 9, "14": 10, "15": 9, "16": 3}, "Holdout_Full": {"1": 1, "3": 1, "4": 2, "5": 1, "6": 2, "7": 6, "8": 2, "9": 2, "10": 1, "13": 1, "15": 3, "16": 2}, "Unassign": {"0": 2, "1": 4, "2": 3, "3": 5, "4": 6, "5": 12, "6": 3, "7": 13, "8": 12, "9": 10, "10": 6, "11": 7, "12": 6, "13": 8, "14": 2, "15": 14, "16": 5}};
 function buildCumPer1K(dailyObj, size) {
   let cum = 0; const pts = [];
-  for (let d = 0; d <= 15; d++) { cum += (dailyObj[d] || 0); pts.push(+(cum * 1000 / size).toFixed(2)); }
+  for (let d = 0; d <= 16; d++) { cum += (dailyObj[d] || 0); pts.push(+(cum * 1000 / size).toFixed(2)); }
   return pts;
 }
-const daysArr = Array.from({length:16}, (_,i) => i);
+const daysArr = Array.from({length:17}, (_,i) => i);
 new Chart(document.getElementById('chartCompCurve'), {
   type: 'line',
   data: {
@@ -536,7 +536,7 @@ new Chart(document.getElementById('chartCompCurve'), {
   }
 });
 
-const stateData = {"Holdout_Full": [91.2, 3.4, 0.9, 4.4], "Holdout_LowIntent": [98.1, 1.4, 0.0, 0.4], "Detach": [58.5, 1.5, 0.6, 39.5], "Unassign": [94.3, 2.2, 0.6, 2.9]};
+const stateData = {"Holdout_Full": [90.7, 3.4, 1.1, 4.7], "Holdout_LowIntent": [98.1, 1.4, 0.0, 0.4], "Detach": [58.2, 1.5, 0.6, 39.7], "Unassign": [94.0, 2.2, 0.7, 3.1]};
 new Chart(document.getElementById('chartState'), {
   type: 'bar',
   data: {
@@ -556,7 +556,7 @@ new Chart(document.getElementById('chartState'), {
   }
 });
 
-const msCounts = {"Holdout_Full": {"Client Review": 7, "Engagement Created": 2, "Evaluation": 1, "Filing": 4, "Gathering Info": 419, "Post File": 22, "Tax Prep Start": 15, "Welcome Call": 1874}, "Holdout_LowIntent": {"Engagement Created": 1, "Gathering Info": 153, "Welcome Call": 1448}, "Detach": {"Client Review": 21, "Engagement Created": 18, "Evaluation": 5, "Filing": 14, "Gathering Info": 2680, "Post File": 104, "Tax Prep Start": 73, "Welcome Call": 14838}, "Unassign": {"Client Review": 28, "Engagement Created": 27, "Evaluation": 5, "Filing": 16, "Gathering Info": 2589, "Post File": 109, "Scheduled Appointment": 1, "Tax Prep Start": 78, "Welcome Call": 14905}};
+const msCounts = {"Holdout_Full": {"Client Review": 8, "Engagement Created": 2, "Evaluation": 2, "Filing": 2, "Gathering Info": 418, "Post File": 26, "Tax Prep Start": 14, "Welcome Call": 1872}, "Holdout_LowIntent": {"Engagement Created": 1, "Gathering Info": 155, "Tax Prep Start": 1, "Welcome Call": 1445}, "Detach": {"Client Review": 21, "Engagement Created": 18, "Evaluation": 6, "Filing": 20, "Gathering Info": 2678, "Post File": 109, "Tax Prep Start": 73, "Welcome Call": 14828}, "Unassign": {"Client Review": 32, "Engagement Created": 27, "Evaluation": 7, "Filing": 13, "Gathering Info": 2594, "Post File": 120, "Scheduled Appointment": 1, "Tax Prep Start": 78, "Welcome Call": 14886}};
 const milestones = ["Welcome Call", "Gathering Info", "Engagement Created", "Tax Prep Start", "Client Review", "Evaluation", "Filing", "Post File", "Scheduled Appointment"];
 const msData = {};
 ['Holdout_Full','Holdout_LowIntent','Detach','Unassign'].forEach(c => {
@@ -581,8 +581,8 @@ new Chart(document.getElementById('chartMilestone'), {
   }
 });
 
-const apptDaily = {"Detach": {"0": 11, "1": 6, "2": 8, "3": 10, "4": 4, "5": 10, "6": 8, "7": 12, "8": 7, "9": 13, "10": 13, "11": 12, "12": 13, "13": 15, "14": 7}, "Holdout_Full": {"0": 2, "2": 2, "3": 2, "4": 2, "5": 2, "6": 6, "7": 6, "8": 2, "9": 2, "11": 1, "12": 1, "13": 4, "14": 1}, "Unassign": {"0": 9, "1": 5, "2": 14, "3": 13, "4": 8, "5": 15, "6": 12, "7": 14, "8": 11, "9": 13, "10": 8, "11": 13, "12": 5, "13": 16, "14": 11}};
-const apptDays = Array.from({length:15}, (_,i) => i);
+const apptDaily = {"Detach": {"0": 11, "1": 6, "2": 8, "3": 10, "4": 4, "5": 10, "6": 8, "7": 12, "8": 7, "9": 13, "10": 13, "11": 12, "12": 13, "13": 15, "14": 9, "15": 6}, "Holdout_Full": {"0": 2, "2": 2, "3": 2, "4": 2, "5": 2, "6": 6, "7": 6, "8": 2, "9": 2, "11": 1, "12": 1, "13": 4, "14": 2, "15": 1}, "Unassign": {"0": 9, "1": 6, "2": 14, "3": 13, "4": 8, "5": 15, "6": 12, "7": 14, "8": 11, "9": 13, "10": 8, "11": 13, "12": 5, "13": 16, "14": 11, "15": 16}};
+const apptDays = Array.from({length:16}, (_,i) => i);
 new Chart(document.getElementById('chartDailyAppts'), {
   type: 'bar',
   data: {

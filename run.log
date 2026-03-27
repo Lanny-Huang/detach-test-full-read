@@ -1,0 +1,62 @@
+09:01:50  Starting detach viz refresh...
+09:02:28  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:02:28  Received status code 200 for POST request
+09:02:28  HTTP Response with status code 200, message: OK
+09:02:28  Successfully opened session 01f129f6-5aae-14aa-bfff-f662b290f77b
+09:02:28  Received status code 200 for GET request
+09:02:28  Running query: cohort_sizes
+09:02:30  Received status code 200 for POST request
+09:02:30  HTTP Response with status code 200, message: OK
+09:02:31    -> 4 rows
+09:02:31  Running query: fs_filings
+09:12:29  Received status code 200 for POST request
+09:12:29  HTTP Response with status code 200, message: OK
+09:12:29    -> 49 rows
+09:12:29  Running query: filing_windows
+09:12:35  Received status code 200 for POST request
+09:12:35  HTTP Response with status code 200, message: OK
+09:12:36  Received status code 200 for POST request
+09:12:36  HTTP Response with status code 200, message: OK
+09:12:36  Received status code 200 for POST request
+09:12:36  HTTP Response with status code 200, message: OK
+09:12:36  Received status code 200 for POST request
+09:12:36  HTTP Response with status code 200, message: OK
+09:12:37  Received status code 200 for POST request
+09:12:37  HTTP Response with status code 200, message: OK
+09:12:37    -> 3 rows
+09:12:37  Running query: post_action_filings
+09:12:40  Received status code 200 for POST request
+09:12:40  HTTP Response with status code 200, message: OK
+09:12:40    -> 2 rows
+09:12:40  Running query: engagement_states
+09:12:45  Received status code 200 for POST request
+09:12:45  HTTP Response with status code 200, message: OK
+09:12:46  Received status code 200 for POST request
+09:12:46  HTTP Response with status code 200, message: OK
+09:12:46  Received status code 200 for POST request
+09:12:46  HTTP Response with status code 200, message: OK
+09:12:47  Received status code 200 for POST request
+09:12:47  HTTP Response with status code 200, message: OK
+09:12:47  Received status code 200 for POST request
+09:12:47  HTTP Response with status code 200, message: OK
+09:12:47    -> 15 rows
+09:12:47  Running query: wip_clearing
+09:12:51  Received status code 200 for POST request
+09:12:51  HTTP Response with status code 200, message: OK
+09:12:51    -> 4 rows
+09:12:51  Running query: milestones
+09:21:05  Received status code 200 for POST request
+09:21:05  HTTP Response with status code 200, message: OK
+09:21:05    -> 29 rows
+09:21:05  Running query: diwm
+09:21:09  Received status code 200 for POST request
+09:21:09  HTTP Response with status code 200, message: OK
+09:21:09    -> 4 rows
+09:21:09  Running query: appointments
+09:21:13  Received status code 200 for POST request
+09:21:13  HTTP Response with status code 200, message: OK
+09:21:13    -> 47 rows
+09:21:13  Closing session 01f129f6-5aae-14aa-bfff-f662b290f77b
+09:21:13  Received status code 200 for POST request
+09:21:13  HTTP Response with status code 200, message: OK
+09:21:13  Rendered /Users/lhuang6/detach-test-full-read/index.html (36,559 bytes)
