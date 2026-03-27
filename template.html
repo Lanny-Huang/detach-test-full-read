@@ -295,8 +295,9 @@
 </table>
 </div>
 
-<!-- ── FS FILING WINDOWS ── -->
-<h2>3. FS Filing by Time Window</h2>
+<!-- ── FRANCHISE COMPLETION WINDOWS ── -->
+<h2>3. Franchise Completion by Time Window</h2>
+<p class="text-sm" style="margin-bottom:16px;color:var(--c-muted)">Auth-level franchise completion (any TurboTax product) measured by days since message sent (3/10). Source: product_analytics_master.</p>
 <div class="grid-2">
 <div class="card">
   <h3>vs Full Holdout</h3>
@@ -318,47 +319,21 @@
 </div>
 </div>
 
-<!-- ── CUMULATIVE FILINGS CHART ── -->
-<h2>4. Cumulative FS Filings — Post Message</h2>
+<!-- ── CUMULATIVE FRANCHISE COMPLETIONS CHART ── -->
+<h2>4. Cumulative Franchise Completions — Post Message</h2>
 <div class="card">
-  <h3>Cumulative FS Filings per 1,000 Engagements</h3>
+  <h3>Cumulative Franchise Completions per 1,000 Auths</h3>
   <div class="chart-wrap"><canvas id="chartCompCurve"></canvas></div>
 </div>
 
-<!-- ── ENGAGEMENT STATE ── -->
-<h2>5. Current Engagement State</h2>
-<div class="grid-2">
-  <div class="card">
-    <h3>Engagement State Distribution</h3>
-    <div class="chart-wrap"><canvas id="chartState"></canvas></div>
-  </div>
-  <div class="card">
-    <h3>Detailed Breakdown</h3>
-    <table class="stat-table">
-      <tr>
-        <th>State</th>
-        <th><span class="badge badge-holdout">Full</span></th>
-        <th><span class="badge badge-holdout-li">LI</span></th>
-        <th><span class="badge badge-detach">Det Act</span></th>
-        <th><span class="badge badge-detach-msg">Det Msg</span></th>
-        <th><span class="badge badge-unassign">Una Act</span></th>
-        <th><span class="badge badge-unassign-msg">Una Msg</span></th>
-      </tr>
-      {% for s in state_rows %}
-      <tr><td>{{ s.label }}</td><td>{{ s.hf_val }}</td><td>{{ s.hli_val }}</td><td>{{ s.da_val }}</td><td>{{ s.dmo_val }}</td><td>{{ s.ua_val }}</td><td>{{ s.umo_val }}</td></tr>
-      {% endfor %}
-    </table>
-  </div>
-</div>
-
 <!-- ── MILESTONE DISTRIBUTION ── -->
-<h2>6. Milestone Distribution</h2>
+<h2>5. Milestone Distribution</h2>
 <div class="card">
   <div class="chart-wrap-tall"><canvas id="chartMilestone"></canvas></div>
 </div>
 
 <!-- ── DIWM RE-ENGAGEMENT ── -->
-<h2>7. DIWM/DIY Re-engagement</h2>
+<h2>6. DIWM/DIY Re-engagement</h2>
 <div class="card">
   <table class="stat-table">
     <tr>
@@ -380,14 +355,14 @@
 </div>
 
 <!-- ── APPOINTMENTS POST-MESSAGE ── -->
-<h2>8. Appointment Activity Post-Message</h2>
+<h2>7. Appointment Activity Post-Message</h2>
 <div class="card">
   <h3>Daily First Appointments Handled (per 1,000)</h3>
   <div class="chart-wrap-tall"><canvas id="chartDailyAppts"></canvas></div>
 </div>
 
 <!-- ── INTERPRETATION ── -->
-<h2>9. Interpretation & Recommendation</h2>
+<h2>8. Interpretation & Recommendation</h2>
 <div class="card">
   <h3>Net Assessment</h3>
   <div class="callout-green callout">
@@ -417,6 +392,7 @@ const COLORS = {
   unassignAct: '#22c55e', unassignMsg: '#86efac'
 };
 const SIZES = {{ sizes_json }};
+const FC_AUTH_SIZES = {{ fc_auth_sizes_json }};
 
 const compDaily = {{ comp_daily_json }};
 function buildCumPer1K(dailyObj, size) {
@@ -430,43 +406,24 @@ new Chart(document.getElementById('chartCompCurve'), {
   data: {
     labels: daysArr,
     datasets: [
-      { label: 'Holdout Full', data: buildCumPer1K(compDaily.Holdout_Full || {}, SIZES.Holdout_Full), borderColor: COLORS.holdout, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Holdout Low-Intent ({{ li_filing_count }} filings)', data: daysArr.map(() => {{ li_cum_per1k }}), borderColor: COLORS.holdoutLI, borderDash: [5,5], borderWidth: 2, fill: false, tension: 0, pointRadius: 0 },
-      { label: 'Detach (Acted)', data: buildCumPer1K(compDaily.Detach_Acted || {}, SIZES.Detach_Acted), borderColor: COLORS.detachAct, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Detach (Msg Only)', data: buildCumPer1K(compDaily.Detach_MsgOnly || {}, SIZES.Detach_MsgOnly), borderColor: COLORS.detachMsg, borderDash: [4,4], fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
-      { label: 'Unassign (Acted)', data: buildCumPer1K(compDaily.Unassign_Acted || {}, SIZES.Unassign_Acted), borderColor: COLORS.unassignAct, fill: false, tension: 0.3, pointRadius: 2 },
-      { label: 'Unassign (Msg Only)', data: buildCumPer1K(compDaily.Unassign_MsgOnly || {}, SIZES.Unassign_MsgOnly), borderColor: COLORS.unassignMsg, borderDash: [4,4], fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
+      { label: 'Holdout Full', data: buildCumPer1K(compDaily.Holdout_Full || {}, FC_AUTH_SIZES.Holdout_Full), borderColor: COLORS.holdout, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Holdout Low-Intent ({{ li_filing_count }} completions)', data: daysArr.map(() => {{ li_cum_per1k }}), borderColor: COLORS.holdoutLI, borderDash: [5,5], borderWidth: 2, fill: false, tension: 0, pointRadius: 0 },
+      { label: 'Detach (Acted)', data: buildCumPer1K(compDaily.Detach_Acted || {}, FC_AUTH_SIZES.Detach_Acted), borderColor: COLORS.detachAct, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Detach (Msg Only)', data: buildCumPer1K(compDaily.Detach_MsgOnly || {}, FC_AUTH_SIZES.Detach_MsgOnly), borderColor: COLORS.detachMsg, borderDash: [4,4], fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
+      { label: 'Unassign (Acted)', data: buildCumPer1K(compDaily.Unassign_Acted || {}, FC_AUTH_SIZES.Unassign_Acted), borderColor: COLORS.unassignAct, fill: false, tension: 0.3, pointRadius: 2 },
+      { label: 'Unassign (Msg Only)', data: buildCumPer1K(compDaily.Unassign_MsgOnly || {}, FC_AUTH_SIZES.Unassign_MsgOnly), borderColor: COLORS.unassignMsg, borderDash: [4,4], fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.5 },
     ]
   },
   options: {
     responsive: true, maintainAspectRatio: false,
     scales: {
       x: { title: { display: true, text: 'Days after message sent (3/10)' }},
-      y: { title: { display: true, text: 'Cumulative FS filings per 1,000' }, beginAtZero: true }
+      y: { title: { display: true, text: 'Cumulative franchise completions per 1,000 auths' }, beginAtZero: true }
     }
   }
 });
 
-const stateData = {{ state_data_json }};
-const stateLabels = ['Holdout Full', 'Holdout LI', 'Detach Act', 'Det Msg', 'Unassign Act', 'Una Msg'];
 const stateCohorts = ['Holdout_Full', 'Holdout_LowIntent', 'Detach_Acted', 'Detach_MsgOnly', 'Unassign_Acted', 'Unassign_MsgOnly'];
-new Chart(document.getElementById('chartState'), {
-  type: 'bar',
-  data: {
-    labels: stateLabels,
-    datasets: [
-      { label: 'WIP w/ Expert', data: stateCohorts.map(c => (stateData[c]||[0])[0]), backgroundColor: '#94a3b8' },
-      { label: 'WIP No Expert', data: stateCohorts.map(c => (stateData[c]||[0,0])[1]), backgroundColor: '#fbbf24' },
-      { label: 'Completed Filed', data: stateCohorts.map(c => (stateData[c]||[0,0,0])[2]), backgroundColor: '#4ade80' }
-    ]
-  },
-  options: {
-    responsive: true, maintainAspectRatio: false,
-    indexAxis: 'y',
-    scales: { x: { stacked: true, title: { display: true, text: '% of cohort' }}, y: { stacked: true }},
-    plugins: { legend: { position: 'bottom' }}
-  }
-});
 
 const msCounts = {{ ms_counts_json }};
 const milestones = {{ milestones_list_json }};

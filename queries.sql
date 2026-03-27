@@ -42,7 +42,8 @@ LEFT JOIN cgan_ustax_published.fs_engagements_master e
 
 -- @query: franchise_completion
 -- Auth-level franchise completion using product_analytics_master (PAM) as SOT
--- FS completion from engagement-level filing_end_ts; franchise completion from PAM ytd_completed_flag
+-- FS completion from engagement-level filing_end_ts; franchise completion from PAM completed_flag
+-- Includes completion date for daily curve and days-since-message calculation
 SELECT
     t.engagement_id,
     t.recipe,
@@ -51,7 +52,9 @@ SELECT
     CASE WHEN e.filing_end_ts IS NOT NULL THEN 1 ELSE 0 END AS fs_completed,
     COALESCE(p.completed_flag, 0) AS franchise_completed,
     p.start_sku_rollup,
-    p.completed_sku
+    p.completed_sku,
+    p.first_completed_date AS franchise_completed_date,
+    DATEDIFF(p.first_completed_date, DATE('2026-03-10')) AS fc_days_since_msg
 FROM cgan_ustax_published.`3_9_detach_test_read` t
 LEFT JOIN cgan_ustax_published.lh_low_intent_holdout_ids li
     ON t.engagement_id = li.engagement_id

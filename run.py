@@ -108,7 +108,7 @@ def stat_test(a_yes, a_no, b_yes, b_no):
         _, p = sp_stats.fisher_exact(table)
         test_name = "Fisher"
     else:
-        _, p, _, _ = sp_stats.chi2_contingency(table, correction=False)
+        _, p, _, _ = sp_stats.chi2_contingency(table, correction=True)
         test_name = "Chi²"
     return p, test_name, p < 0.05
 
@@ -273,70 +273,6 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
         state_rows.append(row_data)
     ctx["state_rows"] = state_rows
 
-    # ── FS filings (daily) ────────────────────────────────────────────────
-    filing_totals = defaultdict(int)
-    comp_daily = defaultdict(lambda: defaultdict(int))
-    for _, row in df_detail.iterrows():
-        c = row["cohort"]
-        if int(row.get("fs_filed", 0)) == 1 and row.get("days_since_msg") is not None:
-            d = int(row["days_since_msg"])
-            if d >= 0:
-                comp_daily[c][d] += 1
-                filing_totals[c] += 1
-
-    max_day = 15
-    for c in comp_daily:
-        if comp_daily[c]:
-            max_day = max(max_day, max(comp_daily[c].keys()))
-    ctx["max_day"] = max_day
-    ctx["filing_totals"] = dict(filing_totals)
-
-    chart_cohorts = ["Detach_Acted", "Detach_MsgOnly", "Holdout_Full", "Unassign_Acted", "Unassign_MsgOnly"]
-    ctx["comp_daily_json"] = json.dumps({c: dict(comp_daily.get(c, {})) for c in chart_cohorts})
-
-    li_filing_count = filing_totals.get("Holdout_LowIntent", 0)
-    ctx["li_filing_count"] = li_filing_count
-    li_size = sizes.get("Holdout_LowIntent", 1) or 1
-    ctx["li_cum_per1k"] = round(li_filing_count * 1000 / li_size, 2) if li_filing_count > 0 else 0
-
-    # ── Filing windows (computed from daily data) ─────────────────────────
-    window_defs = [("0-3", 0, 3), ("0-5", 0, 5), ("0-7", 0, 7), ("0-10", 0, 10), ("all", 0, 9999)]
-    window_labels = [("0-3", "0–3 days"), ("0-5", "0–5 days"), ("0-7", "0–7 days"), ("0-10", "0–10 days"), ("all", "All post-msg")]
-
-    def window_count(cohort, lo, hi):
-        return sum(v for d, v in comp_daily.get(cohort, {}).items() if lo <= d <= hi)
-
-    def build_window_rows(ctrl_cohort, ctrl_size):
-        rows = []
-        for key, label in window_labels:
-            lo, hi = next((lo, hi) for k, lo, hi in window_defs if k == key)
-            ctrl_n = window_count(ctrl_cohort, lo, hi)
-            da_n = window_count("Detach_Acted", lo, hi)
-            ua_n = window_count("Unassign_Acted", lo, hi)
-            da_size = sizes.get("Detach_Acted", 1) or 1
-            ua_size = sizes.get("Unassign_Acted", 1) or 1
-            ctrl_rate = ctrl_n / ctrl_size if ctrl_size else 0
-            da_rate = da_n / da_size
-            ua_rate = ua_n / ua_size
-
-            da_p, _, da_sig = stat_test(da_n, da_size - da_n, ctrl_n, ctrl_size - ctrl_n)
-            ua_p, _, ua_sig = stat_test(ua_n, ua_size - ua_n, ctrl_n, ctrl_size - ctrl_n)
-
-            rows.append({
-                "label": label,
-                "ctrl_rate": fmt_pct(ctrl_rate),
-                "da_rate": fmt_pct(da_rate),
-                "da_itc": itc(da_rate, ctrl_rate), "da_itc_class": itc_class(da_rate, ctrl_rate),
-                "da_pval": fmt_p_short(da_p, da_sig), "da_sig_class": "sig" if da_sig else "not-sig",
-                "ua_rate": fmt_pct(ua_rate),
-                "ua_itc": itc(ua_rate, ctrl_rate), "ua_itc_class": itc_class(ua_rate, ctrl_rate),
-                "ua_pval": fmt_p_short(ua_p, ua_sig), "ua_sig_class": "sig" if ua_sig else "not-sig",
-            })
-        return rows
-
-    ctx["windows_full"] = build_window_rows("Holdout_Full", sizes.get("Holdout_Full", 1))
-    ctx["windows_li"] = build_window_rows("Holdout_LowIntent", sizes.get("Holdout_LowIntent", 1))
-
     # ── Franchise completion (auth-level, from PAM) ────────────────────────
     df_fc = data["franchise_completion"].copy()
     df_fc["cohort"] = df_fc.apply(
@@ -361,6 +297,79 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
             "franchise_rate": fran_comp / auths if auths else 0,
         }
     ctx["fc_stats"] = fc_stats
+
+    # ── Franchise completions (daily, auth-level) ──────────────────────────
+    fc_daily_auths = defaultdict(lambda: defaultdict(set))
+    for _, row in df_fc.iterrows():
+        c = row["cohort"]
+        if int(row.get("franchise_completed", 0)) == 1 and row.get("fc_days_since_msg") is not None and not pd.isna(row["fc_days_since_msg"]):
+            d = int(row["fc_days_since_msg"])
+            if d >= 0:
+                fc_daily_auths[c][d].add(row["auth_id"])
+
+    fc_daily = defaultdict(lambda: defaultdict(int))
+    fc_totals = defaultdict(int)
+    for c in fc_daily_auths:
+        for d, auth_set in fc_daily_auths[c].items():
+            fc_daily[c][d] = len(auth_set)
+            fc_totals[c] += len(auth_set)
+
+    fc_auth_sizes = {c: fc_stats[c]["auths"] for c in ALL_COHORTS}
+
+    max_day = 15
+    for c in fc_daily:
+        if fc_daily[c]:
+            max_day = max(max_day, max(fc_daily[c].keys()))
+    ctx["max_day"] = max_day
+    ctx["fc_totals"] = dict(fc_totals)
+
+    chart_cohorts = ["Detach_Acted", "Detach_MsgOnly", "Holdout_Full", "Unassign_Acted", "Unassign_MsgOnly"]
+    ctx["comp_daily_json"] = json.dumps({c: dict(fc_daily.get(c, {})) for c in chart_cohorts})
+    ctx["fc_auth_sizes_json"] = json.dumps({c: fc_auth_sizes.get(c, 0) for c in ALL_COHORTS})
+
+    li_fc_count = fc_totals.get("Holdout_LowIntent", 0)
+    ctx["li_filing_count"] = li_fc_count
+    li_auth_size = fc_auth_sizes.get("Holdout_LowIntent", 1) or 1
+    ctx["li_cum_per1k"] = round(li_fc_count * 1000 / li_auth_size, 2) if li_fc_count > 0 else 0
+
+    # ── Franchise completion windows (computed from daily data) ────────────
+    window_defs = [("0-3", 0, 3), ("0-5", 0, 5), ("0-7", 0, 7), ("0-10", 0, 10), ("all", 0, 9999)]
+    window_labels = [("0-3", "0–3 days"), ("0-5", "0–5 days"), ("0-7", "0–7 days"), ("0-10", "0–10 days"), ("all", "All post-msg")]
+
+    def window_count(cohort, lo, hi):
+        return sum(v for d, v in fc_daily.get(cohort, {}).items() if lo <= d <= hi)
+
+    def build_window_rows(ctrl_cohort):
+        ctrl_auth_n = fc_auth_sizes.get(ctrl_cohort, 1) or 1
+        rows = []
+        for key, label in window_labels:
+            lo, hi = next((lo, hi) for k, lo, hi in window_defs if k == key)
+            ctrl_n = window_count(ctrl_cohort, lo, hi)
+            da_n = window_count("Detach_Acted", lo, hi)
+            ua_n = window_count("Unassign_Acted", lo, hi)
+            da_auth_n = fc_auth_sizes.get("Detach_Acted", 1) or 1
+            ua_auth_n = fc_auth_sizes.get("Unassign_Acted", 1) or 1
+            ctrl_rate = ctrl_n / ctrl_auth_n
+            da_rate = da_n / da_auth_n
+            ua_rate = ua_n / ua_auth_n
+
+            da_p, _, da_sig = stat_test(da_n, da_auth_n - da_n, ctrl_n, ctrl_auth_n - ctrl_n)
+            ua_p, _, ua_sig = stat_test(ua_n, ua_auth_n - ua_n, ctrl_n, ctrl_auth_n - ctrl_n)
+
+            rows.append({
+                "label": label,
+                "ctrl_rate": fmt_pct(ctrl_rate),
+                "da_rate": fmt_pct(da_rate),
+                "da_itc": itc(da_rate, ctrl_rate), "da_itc_class": itc_class(da_rate, ctrl_rate),
+                "da_pval": fmt_p_short(da_p, da_sig), "da_sig_class": "sig" if da_sig else "not-sig",
+                "ua_rate": fmt_pct(ua_rate),
+                "ua_itc": itc(ua_rate, ctrl_rate), "ua_itc_class": itc_class(ua_rate, ctrl_rate),
+                "ua_pval": fmt_p_short(ua_p, ua_sig), "ua_sig_class": "sig" if ua_sig else "not-sig",
+            })
+        return rows
+
+    ctx["windows_full"] = build_window_rows("Holdout_Full")
+    ctx["windows_li"] = build_window_rows("Holdout_LowIntent")
 
     def build_fc_rows(ctrl_cohort):
         ctrl = fc_stats[ctrl_cohort]
@@ -554,8 +563,8 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
     def build_main_metrics(ctrl_cohort, ctrl_size):
         metrics = []
         metric_defs = [
-            ("FS Filing Rate", None, lambda c: filing_totals.get(c, 0)),
-            ("Franchise Completion", "(auth-level, any product)", lambda c: fc_stats.get(c, {}).get("franchise_completers", 0)),
+            ("Franchise Completion", "(auth-level, any product via PAM)", lambda c: fc_stats.get(c, {}).get("franchise_completers", 0)),
+            ("FS Completion", "(auth-level, filed via Full Service)", lambda c: fc_stats.get(c, {}).get("fs_completers", 0)),
             ("Appt Handled Post-Msg", None, lambda c: appts_total.get(c, 0)),
         ]
         for label, sublabel, count_fn in metric_defs:
@@ -586,23 +595,23 @@ def build_context(data: dict[str, pd.DataFrame]) -> dict:
 
     # ── Summary tests ─────────────────────────────────────────────────────
     summary_tests = []
+    fc_comp_counts = {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}
+    fs_comp_counts = {c: fc_stats.get(c, {}).get("fs_completers", 0) for c in ALL_COHORTS}
     test_specs = [
-        ("FS Filing", "Detach_Acted", "Full", "Holdout_Full", dict(filing_totals)),
-        ("FS Filing", "Unassign_Acted", "Full", "Holdout_Full", dict(filing_totals)),
-        ("FS Filing", "Detach_Acted", "Low Int", "Holdout_LowIntent", dict(filing_totals)),
-        ("FS Filing", "Unassign_Acted", "Low Int", "Holdout_LowIntent", dict(filing_totals)),
-        ("Franchise Comp", "Detach_Acted", "Full", "Holdout_Full",
-         {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}),
-        ("Franchise Comp", "Unassign_Acted", "Full", "Holdout_Full",
-         {c: fc_stats.get(c, {}).get("franchise_completers", 0) for c in ALL_COHORTS}),
-        ("Msg Only FS", "Detach_MsgOnly", "Full", "Holdout_Full", dict(filing_totals)),
-        ("Msg Only FS", "Unassign_MsgOnly", "Full", "Holdout_Full", dict(filing_totals)),
+        ("Franchise Comp", "Detach_Acted", "Full", "Holdout_Full", fc_comp_counts),
+        ("Franchise Comp", "Unassign_Acted", "Full", "Holdout_Full", fc_comp_counts),
+        ("Franchise Comp", "Detach_Acted", "Low Int", "Holdout_LowIntent", fc_comp_counts),
+        ("Franchise Comp", "Unassign_Acted", "Low Int", "Holdout_LowIntent", fc_comp_counts),
+        ("FS Comp", "Detach_Acted", "Full", "Holdout_Full", fs_comp_counts),
+        ("FS Comp", "Unassign_Acted", "Full", "Holdout_Full", fs_comp_counts),
+        ("Msg Franchise", "Detach_MsgOnly", "Full", "Holdout_Full", fc_comp_counts),
+        ("Msg Franchise", "Unassign_MsgOnly", "Full", "Holdout_Full", fc_comp_counts),
     ]
     for metric, treatment, ctrl_label, ctrl_cohort, counts in test_specs:
         treat_n = counts.get(treatment, 0)
         ctrl_n = counts.get(ctrl_cohort, 0)
-        treat_size = sizes.get(treatment, 1) or 1
-        ctrl_size = sizes.get(ctrl_cohort, 1) or 1
+        treat_size = fc_stats.get(treatment, {}).get("auths", 0) or 1
+        ctrl_size = fc_stats.get(ctrl_cohort, {}).get("auths", 0) or 1
         treat_rate = treat_n / treat_size
         ctrl_rate = ctrl_n / ctrl_size
         p, test_type, sig = stat_test(treat_n, treat_size - treat_n, ctrl_n, ctrl_size - ctrl_n)
