@@ -142,3 +142,48 @@ subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth',
 09:01:15  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:01:15  Received status code 200 for POST request
 09:01:19  Rendered /Users/lhuang6/detach-test-full-read/index.html (32,658 bytes)
+[main 4e4ee09] Daily refresh 2026-03-31
+ 2 files changed, 76 insertions(+), 47 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   739eeae..4e4ee09  main -> main
+09:01:22  Pushed to GitHub Pages (2026-03-31).
+09:01:22  Done.
+09:00:09  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:09  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:00:09  Received status code 200 for POST request
+09:00:09  HTTP Response with status code 200, message: OK
+09:00:09  Successfully opened session 01f12de3-dc2b-1756-bab5-912e39dd736f
+09:00:10  Received status code 200 for GET request
+09:00:10  Running query: cohort_sizes
+09:00:14  Received status code 200 for POST request
+09:00:14  HTTP Response with status code 200, message: OK
+09:00:14    -> 4 rows
+09:00:14  Running query: engagement_detail
+09:00:16  Received status code 200 for POST request
+09:00:16  HTTP Response with status code 200, message: OK
+09:00:19    -> 54313 rows
+09:00:19  Running query: franchise_completion
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:25    -> 54313 rows
+09:00:25  Running query: diwm
+09:00:30  Received status code 200 for POST request
+09:00:30  HTTP Response with status code 200, message: OK
+09:00:35  Received status code 200 for POST request
+09:00:35  HTTP Response with status code 200, message: OK
+09:00:35  Received status code 200 for POST request
+09:00:35  HTTP Response with status code 200, message: OK
+09:00:36  Received status code 200 for POST request
+09:00:36  HTTP Response with status code 200, message: OK
+09:00:36  Received status code 200 for POST request
+09:00:36  HTTP Response with status code 200, message: OK
+09:00:39  Received status code 200 for POST request
+09:00:39  HTTP Response with status code 200, message: OK
+09:00:39    -> 54313 rows
+09:00:39  Closing session 01f12de3-dc2b-1756-bab5-912e39dd736f
+09:00:39  Received status code 200 for POST request
+09:00:39  HTTP Response with status code 200, message: OK
+09:00:39  Loaded action IDs: 6082 detach, 6236 unassign
+09:00:40  Received status code 429 for POST request
+09:00:40  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:00:43  Rendered /Users/lhuang6/detach-test-full-read/index.html (32,759 bytes)
