@@ -231,3 +231,156 @@ To https://github.com/Lanny-Huang/detach-test-full-read.git
 09:13:21  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:13:21  Received status code 429 for POST request
 09:13:24  Rendered /Users/lhuang6/detach-test-full-read/index.html (32,885 bytes)
+[main efe450a] Daily refresh 2026-04-02
+ 2 files changed, 107 insertions(+), 63 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   d303e6a..efe450a  main -> main
+09:13:26  Pushed to GitHub Pages (2026-04-02).
+09:13:26  Done.
+09:13:31  Received status code 200 for POST request
+09:10:52  Starting detach viz refresh (v2 — 6-cohort)...
+09:10:52  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:10:55  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 707, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:28:34  Starting detach viz refresh (v2 — 6-cohort)...
+09:28:36  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:28:48  Received status code 200 for POST request
+09:28:48  HTTP Response with status code 200, message: OK
+09:28:48  Successfully opened session 01f13043-5bc3-17a2-8622-24233a74e0bf
+09:28:49  Received status code 200 for GET request
+09:28:49  Running query: cohort_sizes
+09:28:49  Received status code 200 for POST request
+09:28:49  HTTP Response with status code 200, message: OK
+09:37:01  Received status code 200 for POST request
+09:37:01  HTTP Response with status code 200, message: OK
+09:37:04  Retrying (DatabricksRetryPolicy(total=29, connect=None, read=None, redirect=None, status=None)) after connection broken by 'RemoteDisconnected('Remote end closed connection without response')': /sql/1.0/warehouses/8da963fd21c39bf4
+09:37:08  Retrying (DatabricksRetryPolicy(total=28, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /sql/1.0/warehouses/8da963fd21c39bf4
+09:37:16  Retrying (DatabricksRetryPolicy(total=27, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /sql/1.0/warehouses/8da963fd21c39bf4
+10:27:44  Retrying (DatabricksRetryPolicy(total=26, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError("HTTPSConnection(host='intuit-e2-739275435815-exploration-prd.cloud.databricks.com', port=443): Failed to establish a new connection: [Errno 53] Software caused connection abort")': /sql/1.0/warehouses/8da963fd21c39bf4
+10:27:45  ThriftBackend.attempt_request: Exception: Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:27:45  Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds: {"method": "GetOperationStatus", "session-id": null, "query-id": "b'\\x01\\xf10C\\\\#\\x10f\\xb8\\xa4\\x19\\x8d\\xa2&\\x1c\\xba'", "http-code": 200, "error-message": "", "original-exception": "Retry request would exceed Retry policy max retry duration of 900.0 seconds", "no-retry-reason": "non-retryable error", "bounded-retry-delay": null, "attempt": "1/30", "elapsed-seconds": "3044.138130903244/900.0"}
+10:27:45  Closing session 01f13043-5bc3-17a2-8622-24233a74e0bf
+10:27:48  Retrying (DatabricksRetryPolicy(total=29, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /sql/1.0/warehouses/8da963fd21c39bf4
+10:37:57  Retrying (DatabricksRetryPolicy(total=28, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /sql/1.0/warehouses/8da963fd21c39bf4
+10:38:05  Retrying (DatabricksRetryPolicy(total=27, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)'))': /sql/1.0/warehouses/8da963fd21c39bf4
+10:42:30  Retrying (DatabricksRetryPolicy(total=26, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /sql/1.0/warehouses/8da963fd21c39bf4
+10:42:31  ThriftBackend.attempt_request: Exception: Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:42:31  Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds: {"method": "CloseSession", "session-id": "b'\\x01\\xf10C[\\xc3\\x17\\xa2\\x86\"$#:t\\xe0\\xbf'", "query-id": null, "http-code": 200, "error-message": "", "original-exception": "Retry request would exceed Retry policy max retry duration of 900.0 seconds", "no-retry-reason": "non-retryable error", "bounded-retry-delay": null, "attempt": "1/30", "elapsed-seconds": "885.2751319408417/900.0"}
+10:42:31  Run failed: Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:42:33  Retrying (DatabricksRetryPolicy(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /telemetry-ext
+10:42:38  Retrying (DatabricksRetryPolicy(total=3, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)'))': /telemetry-ext
+10:42:38  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 708, in <module>
+    data = run_queries(token)
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 188, in run_queries
+    cur.execute(query)
+    ~~~~~~~~~~~^^^^^^^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/telemetry/latency_logger.py", line 182, in wrapper
+    return func(self, *args, **kwargs)
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/client.py", line 1324, in execute
+    self.active_result_set = self.backend.execute_command(
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        operation=prepared_operation,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+        row_limit=self.row_limit,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 1054, in execute_command
+    execute_response, has_more_rows = self._handle_execute_response(
+                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        resp, cursor
+        ^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 1261, in _handle_execute_response
+    final_operation_state = self._wait_until_command_done(
+        resp.operationHandle,
+        resp.directResults and resp.directResults.operationStatus,
+    )
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 951, in _wait_until_command_done
+    poll_resp = self._poll_for_status(op_handle)
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 669, in _poll_for_status
+    return self.make_request(self._client.GetOperationStatus, req)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 524, in make_request
+    self._handle_request_error(error_info, attempt, elapsed)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 349, in _handle_request_error
+    raise network_request_error
+databricks.sql.exc.RequestError: Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:42:47  Retrying (DatabricksRetryPolicy(total=2, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ConnectionResetError(54, 'Connection reset by peer')': /telemetry-ext
+11:14:31  Retrying (DatabricksRetryPolicy(total=1, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1081)'))': /telemetry-ext
+11:14:32  HTTP request error: Retry request would exceed Retry policy max retry duration of 300.0 seconds
+09:11:38  Starting detach viz refresh (v2 — 6-cohort)...
+09:11:38  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:11:38  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 707, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:02:23  Starting detach viz refresh (v2 — 6-cohort)...
+09:02:23  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:02:28  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 707, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:01:42  Starting detach viz refresh (v2 — 6-cohort)...
+09:02:25  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:02:25  Received status code 200 for POST request
+09:02:25  HTTP Response with status code 200, message: OK
+09:02:25  Successfully opened session 01f1329b-2b9b-1ea1-83e1-fa438ebd6970
+09:02:26  Received status code 200 for GET request
+09:02:26  Running query: cohort_sizes
+09:02:28  Received status code 200 for POST request
+09:02:28  HTTP Response with status code 200, message: OK
+09:02:28    -> 4 rows
+09:02:28  Running query: engagement_detail
+09:02:32  Received status code 200 for POST request
+09:02:32  HTTP Response with status code 200, message: OK
+09:02:36    -> 54313 rows
+09:02:36  Running query: franchise_completion
+09:02:38  Received status code 200 for POST request
+09:02:38  HTTP Response with status code 200, message: OK
+09:02:41    -> 54313 rows
+09:02:41  Running query: diwm
+09:02:44  Received status code 200 for POST request
+09:02:44  HTTP Response with status code 200, message: OK
+09:02:46    -> 54313 rows
+09:02:46  Closing session 01f1329b-2b9b-1ea1-83e1-fa438ebd6970
+09:02:47  Received status code 200 for POST request
+09:02:47  HTTP Response with status code 200, message: OK
+09:02:47  Loaded action IDs: 6082 detach, 6236 unassign
+09:02:47  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:02:47  Received status code 200 for POST request
+09:02:51  Rendered /Users/lhuang6/detach-test-full-read/index.html (33,257 bytes)
