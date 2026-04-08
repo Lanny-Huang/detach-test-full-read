@@ -451,3 +451,9 @@ To https://github.com/Lanny-Huang/detach-test-full-read.git
 09:05:09  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:05:10  Received status code 200 for POST request
 09:05:13  Rendered /Users/lhuang6/detach-test-full-read/index.html (33,290 bytes)
+[main b697530] Daily refresh 2026-04-08
+ 2 files changed, 134 insertions(+), 67 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   b7a502e..b697530  main -> main
+09:05:15  Pushed to GitHub Pages (2026-04-08).
+09:05:15  Done.
