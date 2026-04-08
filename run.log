@@ -384,3 +384,70 @@ subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth',
 09:02:47  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:02:47  Received status code 200 for POST request
 09:02:51  Rendered /Users/lhuang6/detach-test-full-read/index.html (33,257 bytes)
+[main b7a502e] Daily refresh 2026-04-07
+ 2 files changed, 227 insertions(+), 74 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   efe450a..b7a502e  main -> main
+09:02:52  Pushed to GitHub Pages (2026-04-07).
+09:02:52  Done.
+09:04:20  Starting detach viz refresh (v2 — 6-cohort)...
+09:04:21  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:04:21  Received status code 200 for POST request
+09:04:21  HTTP Response with status code 200, message: OK
+09:04:21  Successfully opened session 01f13364-9b05-1cb5-ad00-1bfec0dec21c
+09:04:21  Received status code 200 for GET request
+09:04:21  Running query: cohort_sizes
+09:04:27  Received status code 200 for POST request
+09:04:27  HTTP Response with status code 200, message: OK
+09:04:29  Received status code 200 for POST request
+09:04:29  HTTP Response with status code 200, message: OK
+09:04:29  Received status code 200 for POST request
+09:04:29  HTTP Response with status code 200, message: OK
+09:04:29  Received status code 200 for POST request
+09:04:29  HTTP Response with status code 200, message: OK
+09:04:29  Received status code 200 for POST request
+09:04:29  HTTP Response with status code 200, message: OK
+09:04:29    -> 4 rows
+09:04:29  Running query: engagement_detail
+09:04:34  Received status code 200 for POST request
+09:04:34  HTTP Response with status code 200, message: OK
+09:04:35  Received status code 200 for POST request
+09:04:35  HTTP Response with status code 200, message: OK
+09:04:35  Received status code 200 for POST request
+09:04:35  HTTP Response with status code 200, message: OK
+09:04:35  Received status code 200 for POST request
+09:04:35  HTTP Response with status code 200, message: OK
+09:04:41  Received status code 200 for POST request
+09:04:41  HTTP Response with status code 200, message: OK
+09:04:41    -> 54313 rows
+09:04:41  Running query: franchise_completion
+09:04:46  Received status code 200 for POST request
+09:04:46  HTTP Response with status code 200, message: OK
+09:04:47  Received status code 200 for POST request
+09:04:47  HTTP Response with status code 200, message: OK
+09:04:47  Received status code 200 for POST request
+09:04:47  HTTP Response with status code 200, message: OK
+09:04:47  Received status code 200 for POST request
+09:04:47  HTTP Response with status code 200, message: OK
+09:04:55  Received status code 200 for POST request
+09:04:55  HTTP Response with status code 200, message: OK
+09:04:55    -> 54313 rows
+09:04:55  Running query: diwm
+09:05:01  Received status code 200 for POST request
+09:05:01  HTTP Response with status code 200, message: OK
+09:05:02  Received status code 200 for POST request
+09:05:02  HTTP Response with status code 200, message: OK
+09:05:02  Received status code 200 for POST request
+09:05:02  HTTP Response with status code 200, message: OK
+09:05:02  Received status code 200 for POST request
+09:05:02  HTTP Response with status code 200, message: OK
+09:05:09  Received status code 200 for POST request
+09:05:09  HTTP Response with status code 200, message: OK
+09:05:09    -> 54313 rows
+09:05:09  Closing session 01f13364-9b05-1cb5-ad00-1bfec0dec21c
+09:05:09  Received status code 200 for POST request
+09:05:09  HTTP Response with status code 200, message: OK
+09:05:09  Loaded action IDs: 6082 detach, 6236 unassign
+09:05:09  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:05:10  Received status code 200 for POST request
+09:05:13  Rendered /Users/lhuang6/detach-test-full-read/index.html (33,290 bytes)
