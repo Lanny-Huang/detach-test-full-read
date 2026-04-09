@@ -457,3 +457,32 @@ To https://github.com/Lanny-Huang/detach-test-full-read.git
    b7a502e..b697530  main -> main
 09:05:15  Pushed to GitHub Pages (2026-04-08).
 09:05:15  Done.
+09:04:39  Starting detach viz refresh (v2 — 6-cohort)...
+09:04:44  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:04:46  Received status code 200 for POST request
+09:04:46  HTTP Response with status code 200, message: OK
+09:04:46  Successfully opened session 01f1342d-d430-1e51-89d5-d5afb1e968f1
+09:04:48  Received status code 200 for GET request
+09:04:48  Running query: cohort_sizes
+09:04:51  Received status code 200 for POST request
+09:04:51  HTTP Response with status code 200, message: OK
+09:04:52    -> 4 rows
+09:04:52  Running query: engagement_detail
+09:04:54  Received status code 200 for POST request
+09:04:54  HTTP Response with status code 200, message: OK
+09:04:58    -> 54313 rows
+09:04:58  Running query: franchise_completion
+09:05:00  Received status code 200 for POST request
+09:05:00  HTTP Response with status code 200, message: OK
+09:05:04    -> 54313 rows
+09:05:04  Running query: diwm
+09:05:06  Received status code 200 for POST request
+09:05:06  HTTP Response with status code 200, message: OK
+09:05:09    -> 54313 rows
+09:05:09  Closing session 01f1342d-d430-1e51-89d5-d5afb1e968f1
+09:05:09  Received status code 200 for POST request
+09:05:09  HTTP Response with status code 200, message: OK
+09:05:09  Loaded action IDs: 6082 detach, 6236 unassign
+09:05:10  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:05:10  Received status code 429 for POST request
+09:05:13  Rendered /Users/lhuang6/detach-test-full-read/index.html (33,334 bytes)
