@@ -486,3 +486,74 @@ To https://github.com/Lanny-Huang/detach-test-full-read.git
 09:05:10  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:05:10  Received status code 429 for POST request
 09:05:13  Rendered /Users/lhuang6/detach-test-full-read/index.html (33,334 bytes)
+[main dc1089e] Daily refresh 2026-04-09
+ 2 files changed, 95 insertions(+), 66 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   f71f180..dc1089e  main -> main
+09:05:15  Pushed to GitHub Pages (2026-04-09).
+09:05:15  Done.
+09:05:22  Received status code 200 for POST request
+09:10:27  Starting detach viz refresh (v2 — 6-cohort)...
+09:28:03  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:28:14  Received status code 200 for POST request
+09:28:14  HTTP Response with status code 200, message: OK
+09:28:14  Successfully opened session 01f134fa-45fe-1b91-869f-66295af95e0a
+09:28:15  Received status code 200 for GET request
+09:28:15  Running query: cohort_sizes
+09:59:48  ThriftBackend.attempt_request: Exception: Retry request would exceed Retry policy max retry duration of 900.0 seconds
+09:59:48  Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds: {"method": "ExecuteStatement", "session-id": "b'\\x01\\xf14\\xfaE\\xfe\\x1b\\x91\\x86\\x9ff)Z\\xf9^\\n'", "query-id": null, "http-code": 200, "error-message": "", "original-exception": "Retry request would exceed Retry policy max retry duration of 900.0 seconds", "no-retry-reason": "non-retryable error", "bounded-retry-delay": null, "attempt": "1/30", "elapsed-seconds": "1892.467423915863/900.0"}
+09:59:48  Closing session 01f134fa-45fe-1b91-869f-66295af95e0a
+09:59:52  Received status code 200 for POST request
+09:59:52  HTTP Response with status code 200, message: OK
+09:59:52  Run failed: Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:00:05  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 708, in <module>
+    data = run_queries(token)
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 188, in run_queries
+    cur.execute(query)
+    ~~~~~~~~~~~^^^^^^^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/telemetry/latency_logger.py", line 182, in wrapper
+    return func(self, *args, **kwargs)
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/client.py", line 1324, in execute
+    self.active_result_set = self.backend.execute_command(
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        operation=prepared_operation,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+        row_limit=self.row_limit,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 1048, in execute_command
+    resp = self.make_request(self._client.ExecuteStatement, req)
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 524, in make_request
+    self._handle_request_error(error_info, attempt, elapsed)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lhuang6/Desktop/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 349, in _handle_request_error
+    raise network_request_error
+databricks.sql.exc.RequestError: Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:00:09  Received status code 200 for POST request
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+/Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
