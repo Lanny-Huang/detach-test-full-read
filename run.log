@@ -557,3 +557,175 @@ databricks.sql.exc.RequestError: Error during request to server. Retry request w
 /Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
 /Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
 /Users/lhuang6/detach-test-full-read/refresh.sh: line 10: /Users/lhuang6/Desktop/sto-env/bin/python: No such file or directory
+09:14:17  Starting detach viz refresh (v2 — 6-cohort)...
+09:14:51  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:14:54  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:23:27  Starting detach viz refresh (v2 — 6-cohort)...
+10:05:13  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+10:23:44  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:11:07  Starting detach viz refresh (v2 — 6-cohort)...
+09:11:11  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:11:13  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:00:50  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:50  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:00:57  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:00:06  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:06  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:00:09  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:14:52  Starting detach viz refresh (v2 — 6-cohort)...
+09:14:52  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:14:58  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:00:07  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:07  Run failed: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:00:10  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 735, in <module>
+    token = get_databricks_token()
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 151, in get_databricks_token
+    result = subprocess.run(
+        ["/opt/homebrew/bin/databricks", "auth", "token", "--profile", DB_PROFILE],
+        capture_output=True, text=True, check=True,
+    )
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth', 'token', '--profile', 'intuit-e2-739275435815-exploration-prd']' returned non-zero exit status 1.
+09:15:04  Starting detach viz refresh (v2 — 6-cohort)...
+09:15:07  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:15:07  Received status code 200 for POST request
+09:15:07  HTTP Response with status code 200, message: OK
+09:15:07  Successfully opened session 01f14e1d-be3c-16e8-b3f3-0d937cddc016
+09:15:08  Received status code 200 for GET request
+09:15:08  Running query: cohort_sizes
+09:15:13  Received status code 200 for POST request
+09:15:13  HTTP Response with status code 200, message: OK
+09:26:28  Retrying (DatabricksRetryPolicy(total=29, connect=None, read=None, redirect=None, status=None)) after connection broken by 'RemoteDisconnected('Remote end closed connection without response')': /sql/1.0/warehouses/8da963fd21c39bf4
+09:26:28  Received status code 200 for POST request
+09:26:28  HTTP Response with status code 200, message: OK
+09:26:28  Received status code 200 for POST request
+09:26:28  HTTP Response with status code 200, message: OK
+09:26:29  Received status code 200 for POST request
+09:26:29  HTTP Response with status code 200, message: OK
+09:26:29  Received status code 200 for POST request
+09:26:29  HTTP Response with status code 200, message: OK
+09:26:29    -> 4 rows
+09:26:29  Running query: engagement_detail
+09:26:34  Received status code 200 for POST request
+09:26:34  HTTP Response with status code 200, message: OK
+09:26:36  Received status code 200 for POST request
+09:26:36  HTTP Response with status code 200, message: OK
+09:26:36  Received status code 200 for POST request
+09:26:36  HTTP Response with status code 200, message: OK
+09:26:36  Received status code 200 for POST request
+09:26:36  HTTP Response with status code 200, message: OK
+09:26:40  Received status code 200 for POST request
+09:26:40  HTTP Response with status code 200, message: OK
+09:26:40    -> 54313 rows
+09:26:40  Running query: franchise_completion
+09:26:45  Received status code 200 for POST request
+09:26:45  HTTP Response with status code 200, message: OK
+09:26:50  Received status code 200 for POST request
+09:26:50  HTTP Response with status code 200, message: OK
+09:26:51  Received status code 200 for POST request
+09:26:51  HTTP Response with status code 200, message: OK
+09:26:51  Received status code 200 for POST request
+09:26:51  HTTP Response with status code 200, message: OK
+09:26:52  Received status code 200 for POST request
+09:26:52  HTTP Response with status code 200, message: OK
+09:26:55  Received status code 200 for POST request
+09:26:55  HTTP Response with status code 200, message: OK
+09:26:55    -> 54313 rows
+09:26:55  Running query: diwm
+09:27:00  Received status code 200 for POST request
+09:27:00  HTTP Response with status code 200, message: OK
+09:27:05  Received status code 200 for POST request
+09:27:05  HTTP Response with status code 200, message: OK
+09:27:10  Received status code 200 for POST request
+09:27:10  HTTP Response with status code 200, message: OK
+09:27:11  Received status code 200 for POST request
+09:27:11  HTTP Response with status code 200, message: OK
+09:27:11  Received status code 200 for POST request
+09:27:11  HTTP Response with status code 200, message: OK
+09:27:11  Received status code 200 for POST request
+09:27:11  HTTP Response with status code 200, message: OK
+09:27:14  Received status code 200 for POST request
+09:27:14  HTTP Response with status code 200, message: OK
+09:27:14    -> 54313 rows
+09:27:14  Closing session 01f14e1d-be3c-16e8-b3f3-0d937cddc016
+09:27:14  Received status code 200 for POST request
+09:27:14  HTTP Response with status code 200, message: OK
+09:27:14  Loaded action IDs: 6082 detach, 6236 unassign
+09:27:15  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:27:19  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,386 bytes)

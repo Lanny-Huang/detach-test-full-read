@@ -676,6 +676,34 @@ def git_push():
     )
     subprocess.run(["git", "push", "origin", "main"], check=True)
     log.info(f"Pushed to GitHub Pages ({date_str}).")
+    push_to_playground(date_str)
+
+
+def push_to_playground(date_str: str):
+    """Mirror index.html to github.intuit.com/lhuang6/Lanny-Agentic-Playground/reports/."""
+    html_path = SCRIPT_DIR / "index.html"
+    target_path = "reports/detach-test-full-read.html"
+    api_path = f"repos/lhuang6/Lanny-Agentic-Playground/contents/{target_path}"
+    env = {**os.environ, "GH_HOST": "github.intuit.com"}
+    sha_result = subprocess.run(
+        ["gh", "api", api_path, "--jq", ".sha"],
+        capture_output=True, text=True, env=env,
+    )
+    sha = sha_result.stdout.strip() if sha_result.returncode == 0 else ""
+    import base64 as _b64
+    content_b64 = _b64.b64encode(html_path.read_bytes()).decode()
+    args = [
+        "gh", "api", "-X", "PUT", api_path,
+        "-f", f"message=Daily refresh {date_str}",
+        "-f", f"content={content_b64}",
+    ]
+    if sha:
+        args += ["-f", f"sha={sha}"]
+    result = subprocess.run(args, capture_output=True, text=True, env=env)
+    if result.returncode == 0:
+        log.info(f"Mirrored to Lanny-Agentic-Playground/{target_path}")
+    else:
+        log.warning(f"Playground mirror failed: {result.stderr.strip()}")
 
 
 def send_failure_email(error_msg: str):
