@@ -729,3 +729,83 @@ subprocess.CalledProcessError: Command '['/opt/homebrew/bin/databricks', 'auth',
 09:27:14  Loaded action IDs: 6082 detach, 6236 unassign
 09:27:15  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:27:19  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,386 bytes)
+[main 68c6a83] Daily refresh 2026-05-12
+ 3 files changed, 245 insertions(+), 45 deletions(-)
+fatal: unable to access 'https://github.com/Lanny-Huang/detach-test-full-read.git/': Failed to connect to github.com port 443 after 712 ms: Couldn't connect to server
+09:27:20  Run failed: Command '['git', 'push', 'origin', 'main']' returned non-zero exit status 128.
+09:27:22  Retrying (DatabricksRetryPolicy(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'NewConnectionError("HTTPSConnection(host='intuit-e2-739275435815-exploration-prd.cloud.databricks.com', port=443): Failed to establish a new connection: [Errno 53] Software caused connection abort")': /telemetry-ext
+09:27:22  Received status code 429 for POST request
+09:27:22  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 739, in <module>
+    git_push()
+    ~~~~~~~~^^
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 677, in git_push
+    subprocess.run(["git", "push", "origin", "main"], check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['git', 'push', 'origin', 'main']' returned non-zero exit status 128.
+09:44:46  Received status code 200 for POST request
+09:00:12  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:14  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:00:14  Received status code 200 for POST request
+09:00:14  HTTP Response with status code 200, message: OK
+09:00:14  Successfully opened session 01f14ee4-d46e-10aa-9f07-fcc6b60e413f
+09:00:15  Received status code 200 for GET request
+09:00:15  Running query: cohort_sizes
+09:00:20  Received status code 200 for POST request
+09:00:20  HTTP Response with status code 200, message: OK
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:23  Received status code 200 for POST request
+09:00:23  HTTP Response with status code 200, message: OK
+09:00:23    -> 4 rows
+09:00:23  Running query: engagement_detail
+09:00:28  Received status code 200 for POST request
+09:00:28  HTTP Response with status code 200, message: OK
+09:00:28  Received status code 200 for POST request
+09:00:28  HTTP Response with status code 200, message: OK
+09:00:28  Received status code 200 for POST request
+09:00:28  HTTP Response with status code 200, message: OK
+09:00:29  Received status code 200 for POST request
+09:00:29  HTTP Response with status code 200, message: OK
+09:00:34  Received status code 200 for POST request
+09:00:34  HTTP Response with status code 200, message: OK
+09:00:34    -> 54313 rows
+09:00:34  Running query: franchise_completion
+09:00:39  Received status code 200 for POST request
+09:00:39  HTTP Response with status code 200, message: OK
+09:00:40  Received status code 200 for POST request
+09:00:40  HTTP Response with status code 200, message: OK
+09:00:40  Received status code 200 for POST request
+09:00:40  HTTP Response with status code 200, message: OK
+09:00:41  Received status code 200 for POST request
+09:00:41  HTTP Response with status code 200, message: OK
+09:00:44  Received status code 200 for POST request
+09:00:44  HTTP Response with status code 200, message: OK
+09:00:44    -> 54313 rows
+09:00:44  Running query: diwm
+09:00:49  Received status code 200 for POST request
+09:00:49  HTTP Response with status code 200, message: OK
+09:00:51  Received status code 200 for POST request
+09:00:51  HTTP Response with status code 200, message: OK
+09:00:52  Received status code 200 for POST request
+09:00:52  HTTP Response with status code 200, message: OK
+09:00:52  Received status code 200 for POST request
+09:00:52  HTTP Response with status code 200, message: OK
+09:00:55  Received status code 200 for POST request
+09:00:55  HTTP Response with status code 200, message: OK
+09:00:55    -> 54313 rows
+09:00:55  Closing session 01f14ee4-d46e-10aa-9f07-fcc6b60e413f
+09:00:55  Received status code 200 for POST request
+09:00:55  HTTP Response with status code 200, message: OK
+09:00:55  Loaded action IDs: 6082 detach, 6236 unassign
+09:00:56  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:00:56  Received status code 429 for POST request
+09:01:00  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,387 bytes)
