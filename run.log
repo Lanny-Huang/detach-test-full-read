@@ -846,3 +846,92 @@ To https://github.com/Lanny-Huang/detach-test-full-read.git
 09:00:31  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:00:32  Received status code 429 for POST request
 09:00:35  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,389 bytes)
+[main bf3225b] Daily refresh 2026-05-14
+ 2 files changed, 43 insertions(+), 6 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   b8db01f..bf3225b  main -> main
+09:00:38  Pushed to GitHub Pages (2026-05-14).
+09:00:40  Mirrored to Lanny-Agentic-Playground/reports/detach-test-full-read.html
+09:00:40  Done.
+09:00:42  Received status code 200 for POST request
+09:00:09  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:10  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:00:11  Received status code 200 for POST request
+09:00:11  HTTP Response with status code 200, message: OK
+09:00:11  Successfully opened session 01f15077-271c-1eb8-beda-b0276f6ede1d
+09:00:11  Received status code 200 for GET request
+09:00:11  Running query: cohort_sizes
+09:00:16  Received status code 200 for POST request
+09:00:16  HTTP Response with status code 200, message: OK
+09:00:20  Received status code 200 for POST request
+09:00:20  HTTP Response with status code 200, message: OK
+09:00:20  Received status code 200 for POST request
+09:00:20  HTTP Response with status code 200, message: OK
+09:00:20  Received status code 200 for POST request
+09:00:20  HTTP Response with status code 200, message: OK
+09:00:21  Received status code 200 for POST request
+09:00:21  HTTP Response with status code 200, message: OK
+09:00:21    -> 4 rows
+09:00:21  Running query: engagement_detail
+09:00:26  Received status code 200 for POST request
+09:00:26  HTTP Response with status code 200, message: OK
+09:00:29  Received status code 200 for POST request
+09:00:29  HTTP Response with status code 200, message: OK
+09:00:29  Received status code 200 for POST request
+09:00:29  HTTP Response with status code 200, message: OK
+09:00:29  Received status code 200 for POST request
+09:00:29  HTTP Response with status code 200, message: OK
+09:00:34  Received status code 200 for POST request
+09:00:34  HTTP Response with status code 200, message: OK
+09:00:34    -> 54313 rows
+09:00:34  Running query: franchise_completion
+09:00:39  Received status code 200 for POST request
+09:00:39  HTTP Response with status code 200, message: OK
+09:00:44  Received status code 200 for POST request
+09:00:44  HTTP Response with status code 200, message: OK
+09:00:46  Received status code 200 for POST request
+09:00:46  HTTP Response with status code 200, message: OK
+09:00:46  Received status code 200 for POST request
+09:00:46  HTTP Response with status code 200, message: OK
+09:00:46  Received status code 200 for POST request
+09:00:46  HTTP Response with status code 200, message: OK
+09:00:49  Received status code 200 for POST request
+09:00:49  HTTP Response with status code 200, message: OK
+09:00:49    -> 54313 rows
+09:00:49  Running query: diwm
+09:00:55  Received status code 200 for POST request
+09:00:55  HTTP Response with status code 200, message: OK
+09:01:00  Received status code 200 for POST request
+09:01:00  HTTP Response with status code 200, message: OK
+09:01:05  Received status code 200 for POST request
+09:01:05  HTTP Response with status code 200, message: OK
+09:01:10  Received status code 200 for POST request
+09:01:10  HTTP Response with status code 200, message: OK
+09:01:16  Received status code 200 for POST request
+09:01:16  HTTP Response with status code 200, message: OK
+09:01:21  Received status code 200 for POST request
+09:01:21  HTTP Response with status code 200, message: OK
+09:01:26  Received status code 200 for POST request
+09:01:26  HTTP Response with status code 200, message: OK
+09:01:31  Received status code 200 for POST request
+09:01:31  HTTP Response with status code 200, message: OK
+09:01:36  Received status code 200 for POST request
+09:01:36  HTTP Response with status code 200, message: OK
+09:01:41  Received status code 200 for POST request
+09:01:41  HTTP Response with status code 200, message: OK
+09:01:44  Received status code 200 for POST request
+09:01:44  HTTP Response with status code 200, message: OK
+09:01:45  Received status code 200 for POST request
+09:01:45  HTTP Response with status code 200, message: OK
+09:01:45  Received status code 200 for POST request
+09:01:45  HTTP Response with status code 200, message: OK
+09:01:48  Received status code 200 for POST request
+09:01:48  HTTP Response with status code 200, message: OK
+09:01:48    -> 54313 rows
+09:01:48  Closing session 01f15077-271c-1eb8-beda-b0276f6ede1d
+09:01:48  Received status code 200 for POST request
+09:01:48  HTTP Response with status code 200, message: OK
+09:01:48  Loaded action IDs: 6082 detach, 6236 unassign
+09:01:48  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:01:48  Received status code 200 for POST request
+09:01:52  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,435 bytes)
