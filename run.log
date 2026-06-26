@@ -1665,3 +1665,98 @@ To https://github.com/Lanny-Huang/detach-test-full-read.git
 09:00:40  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
 09:00:40  Received status code 200 for POST request
 09:00:43  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,879 bytes)
+[main 1a4ed4c] Daily refresh 2026-06-24
+ 2 files changed, 58 insertions(+), 6 deletions(-)
+To https://github.com/Lanny-Huang/detach-test-full-read.git
+   4af88c9..1a4ed4c  main -> main
+09:00:45  Pushed to GitHub Pages (2026-06-24).
+09:00:48  Mirrored to Lanny-Agentic-Playground/reports/detach-test-full-read.html
+09:00:48  Done.
+09:47:21  Starting detach viz refresh (v2 — 6-cohort)...
+09:47:23  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:47:25  Received status code 200 for POST request
+09:47:25  HTTP Response with status code 200, message: OK
+09:47:25  Successfully opened session 01f170b5-8b8d-152d-a69f-07861b31e4f3
+09:47:26  Received status code 200 for GET request
+09:47:26  Running query: cohort_sizes
+09:47:30  Received status code 200 for POST request
+09:47:30  HTTP Response with status code 200, message: OK
+09:47:30    -> 4 rows
+09:47:30  Running query: engagement_detail
+09:47:33  Received status code 200 for POST request
+09:47:33  HTTP Response with status code 200, message: OK
+09:47:39    -> 54313 rows
+09:47:39  Running query: franchise_completion
+10:48:04  ThriftBackend.attempt_request: Exception: Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:48:04  Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds: {"method": "ExecuteStatement", "session-id": "b'\\x01\\xf1p\\xb5\\x8b\\x8d\\x15-\\xa6\\x9f\\x07\\x86\\x1b1\\xe4\\xf3'", "query-id": null, "http-code": 200, "error-message": "", "original-exception": "Retry request would exceed Retry policy max retry duration of 900.0 seconds", "no-retry-reason": "non-retryable error", "bounded-retry-delay": null, "attempt": "1/30", "elapsed-seconds": "3624.8014142513275/900.0"}
+10:48:04  Closing session 01f170b5-8b8d-152d-a69f-07861b31e4f3
+10:48:45  Received status code 403 for POST request
+10:48:45  HTTP Response with status code 403, message: Forbidden
+10:48:45  ThriftBackend.attempt_request: Exception: 
+10:48:45  Error during request to server. : {"method": "CloseSession", "session-id": "b'\\x01\\xf1p\\xb5\\x8b\\x8d\\x15-\\xa6\\x9f\\x07\\x86\\x1b1\\xe4\\xf3'", "query-id": null, "http-code": 403, "error-message": "", "original-exception": "", "no-retry-reason": "non-retryable error", "bounded-retry-delay": null, "attempt": "1/30", "elapsed-seconds": "40.64780592918396/900.0"}
+10:48:45  Run failed: Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds
+10:48:57  Received status code 403 for POST request
+10:49:00  Failure email sent.
+Traceback (most recent call last):
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 736, in <module>
+    data = run_queries(token)
+  File "/Users/lhuang6/detach-test-full-read/run.py", line 188, in run_queries
+    cur.execute(query)
+    ~~~~~~~~~~~^^^^^^^
+  File "/Users/lhuang6/Desktop/cursor-claude-projects/sto-env/lib/python3.14/site-packages/databricks/sql/telemetry/latency_logger.py", line 182, in wrapper
+    return func(self, *args, **kwargs)
+  File "/Users/lhuang6/Desktop/cursor-claude-projects/sto-env/lib/python3.14/site-packages/databricks/sql/client.py", line 1324, in execute
+    self.active_result_set = self.backend.execute_command(
+                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        operation=prepared_operation,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+        row_limit=self.row_limit,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/lhuang6/Desktop/cursor-claude-projects/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 1048, in execute_command
+    resp = self.make_request(self._client.ExecuteStatement, req)
+  File "/Users/lhuang6/Desktop/cursor-claude-projects/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 524, in make_request
+    self._handle_request_error(error_info, attempt, elapsed)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lhuang6/Desktop/cursor-claude-projects/sto-env/lib/python3.14/site-packages/databricks/sql/backend/thrift_backend.py", line 349, in _handle_request_error
+    raise network_request_error
+databricks.sql.exc.RequestError: Error during request to server. Retry request would exceed Retry policy max retry duration of 900.0 seconds
+09:00:08  Starting detach viz refresh (v2 — 6-cohort)...
+09:00:11  [WARN] pyarrow is not installed by default since databricks-sql-connector 4.0.0,any arrow specific api (e.g. fetchmany_arrow) and cloud fetch will be disabled.If you need these features, please run pip install pyarrow or pip install databricks-sql-connector[pyarrow] to install
+09:00:11  Received status code 200 for POST request
+09:00:11  HTTP Response with status code 200, message: OK
+09:00:11  Successfully opened session 01f17178-1ce5-15d4-9f55-c21a0209371a
+09:00:12  Received status code 200 for GET request
+09:00:12  Running query: cohort_sizes
+09:00:17  Received status code 200 for POST request
+09:00:17  HTTP Response with status code 200, message: OK
+09:00:21  Received status code 200 for POST request
+09:00:21  HTTP Response with status code 200, message: OK
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:22  Received status code 200 for POST request
+09:00:22  HTTP Response with status code 200, message: OK
+09:00:22    -> 4 rows
+09:00:22  Running query: engagement_detail
+09:00:24  Received status code 200 for POST request
+09:00:24  HTTP Response with status code 200, message: OK
+09:00:28    -> 54313 rows
+09:00:28  Running query: franchise_completion
+09:00:32  Received status code 200 for POST request
+09:00:32  HTTP Response with status code 200, message: OK
+09:00:35    -> 54313 rows
+09:00:35  Running query: diwm
+09:00:38  Received status code 200 for POST request
+09:00:38  HTTP Response with status code 200, message: OK
+09:00:41    -> 54313 rows
+09:00:41  Closing session 01f17178-1ce5-15d4-9f55-c21a0209371a
+09:00:41  Received status code 200 for POST request
+09:00:41  HTTP Response with status code 200, message: OK
+09:00:41  Loaded action IDs: 6082 detach, 6236 unassign
+09:00:41  Cohort sizes: {'Detach_Acted': 6082, 'Detach_MsgOnly': 11671, 'Holdout_Full': 2344, 'Holdout_LowIntent': 1602, 'Unassign_Acted': 6235, 'Unassign_MsgOnly': 11523}
+09:00:41  Received status code 200 for POST request
+09:00:45  Rendered /Users/lhuang6/detach-test-full-read/index.html (34,878 bytes)
